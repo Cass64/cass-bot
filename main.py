@@ -5,6 +5,7 @@ from discord.ext import commands
 
 
 # Initialisation des intents
+print(os.environ)
 intents = discord.Intents.default()
 intents.members = True  # Permet d'écouter les événements relatifs aux membres
 intents.message_content = True  # Permet de lire le contenu des messages pour les commandes
