@@ -16,8 +16,7 @@ class GamesCog(commands.Cog):
         await ctx.send(f'Résulat obtenu : {result}')
 
 async def setup(bot):
-    await bot.add_cog(GamesCog(bot))
     # Si le cog est déjà chargé, on le décharge et on le recharge
     if bot.get_cog('GamesCog'):
         bot.remove_cog('GamesCog')
-    await bot.add_cog(GamesCog(bot))
+        await bot.add_cog(GamesCog(bot))
