@@ -11,6 +11,12 @@ class MonBot(commands.Bot):
   async def setup_hook(self):
     for extension in ['games', 'moderation','events']:
       await self.load_extension(f'cogs.{extension}')
+      try:
+            bot.load_extension(cog)
+            print(f"Extension {cog} chargée avec succès.")
+      except Exception as e:
+            print(f"Échec du chargement de {cog}: {str(e)}")
+
       
 
 
