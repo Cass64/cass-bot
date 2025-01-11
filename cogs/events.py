@@ -16,8 +16,13 @@ class Events(commands.Cog):
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
+
+        # Cette condition sera pour la commande "bonjour"
         if message.content.lower().startswith("bonjour"):
             await message.channel.send("Bonjour, c'est le bot")
+        
+        # Traiter les commandes après avoir géré l'événement personnalisé
+        await self.bot.process_commands(message)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message):
@@ -44,6 +49,6 @@ class Events(commands.Cog):
             if roles_to_add:
                 await member.add_roles(*roles_to_add)  # Ajoute les rôles sauvegardés
 
-# Fonction setup pour charger ce cog
+# Fonction pour charger ce cog
 async def setup(bot):
     await bot.add_cog(Events(bot))
