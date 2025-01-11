@@ -11,22 +11,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"Le bot est prêt ! Connecté en tant que {self.bot.user}")
-
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        if message.author.bot:
-            return
-        if message.content.lower().startswith("bonjour"):
-            await message.channel.send("Bonjour, c'est le bot")
-
-    @commands.Cog.listener()
-    async def on_message_delete(self, message: discord.Message):
-        await message.channel.send(f"{message.author.name} a supprimé {message.content}")
-
-    @commands.Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message):
-        await after.channel.send(f"{before.content} est devenu {after.content}")
-
+        
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         # Sauvegarde les rôles de l'utilisateur qui quitte
