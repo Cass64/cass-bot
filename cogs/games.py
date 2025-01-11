@@ -17,6 +17,4 @@ class GamesCog(commands.Cog):
 
 async def setup(bot):
     # Si le cog est déjà chargé, on le décharge et on le recharge
-    if bot.get_cog('GamesCog'):
-        bot.remove_cog('GamesCog')
-        await bot.add_cog(GamesCog(bot))
+ 
