@@ -27,7 +27,6 @@ DICE_EMOJIS = {
 
 @bot.event
 async def on_ready():
-    bot.remove_command("roll")  # Supprime les doublons éventuels
     print(f"Connecté en tant que {bot.user}")
 
 @bot.event
