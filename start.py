@@ -34,6 +34,35 @@ async def roll(ctx):
     dice_emoji = DICE_EMOJIS[dice_result]
     # Envoyer le résultat sous forme d'emoji
     await ctx.send(f"🎲 Tu as obtenu : {dice_emoji} !")
+
+
+@bot.command(name="roll2")
+async def roll2(ctx):
+    """Lance 2 dés."""
+    dice_results = [random.randint(1, 6) for _ in range(2)]  # Lancer 2 dés
+    dice_emojis = [DICE_EMOJIS[result] for result in dice_results]  # Convertir en emojis
+    results_message = " | ".join(dice_emojis)  # Joindre les résultats avec des séparateurs
+    await ctx.send(f"🎲 Résultats des 2 dés : {results_message}")
+
+
+@bot.command(name="roll3")
+async def roll3(ctx):
+    """Lance 3 dés."""
+    dice_results = [random.randint(1, 6) for _ in range(3)]  # Lancer 3 dés
+    dice_emojis = [DICE_EMOJIS[result] for result in dice_results]  # Convertir en emojis
+    results_message = " | ".join(dice_emojis)  # Joindre les résultats avec des séparateurs
+    await ctx.send(f"🎲 Résultats des 3 dés : {results_message}")
+
+
+@bot.command(name="roll4")
+async def roll4(ctx):
+    """Lance 4 dés."""
+    dice_results = [random.randint(1, 6) for _ in range(4)]  # Lancer 4 dés
+    dice_emojis = [DICE_EMOJIS[result] for result in dice_results]  # Convertir en emojis
+    results_message = " | ".join(dice_emojis)  # Joindre les résultats avec des séparateurs
+    await ctx.send(f"🎲 Résultats des 4 dés : {results_message}")
+
+
 @bot.command(name="roll5")
 async def roll5(ctx):
     """Lance 5 dés."""
