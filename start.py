@@ -21,7 +21,7 @@ dice_emojis = {
     5: "⚄",
     6: "⚆"
 }
-
+@bot.command()
 async def roll(ctx):
     result = random.randint(1, 6)  # Lancer un dé à 6 faces
     dice_face = dice_emojis[result]
