@@ -12,17 +12,9 @@ token = os.getenv('TOKEN_BOT_DISCORD')
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-# Commande pour le jeu "roll"
-@bot.command()
 async def roll(ctx):
-    result = random.randint(1, 6)
+    result = random.randint(1, 6)  # Lancer un dé à 6 faces
     await ctx.send(f'{ctx.author.name} lance un dé et obtient : {result}')
-
-# Commande pour le jeu "pile ou face"
-@bot.hybrid_command()
-async def pileouface(ctx):
-    result = random.choice(['pile', 'face'])
-    await ctx.send(f'Résultat obtenu : {result}')
 
 # Quand le bot est prêt
 @bot.event
