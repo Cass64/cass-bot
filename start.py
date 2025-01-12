@@ -10,7 +10,7 @@ token = os.getenv('TOKEN_BOT_DISCORD')
 
 # Crée un objet bot
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='!!', intents=intents)
 
 # Dictionnaire pour stocker les rôles des membres qui quittent
 ancien_roles = {}
