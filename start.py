@@ -21,7 +21,7 @@ DICE_EMOJIS = {
     5: "🎲5️⃣",
     6: "🎲6️⃣"
 }
-@.command(name="roll")
+@bot.command(name="roll")
 async def roll(ctx):
     # Lancer un dé (1 à 6)
     dice_result = random.randint(1, 6)
