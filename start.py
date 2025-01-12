@@ -14,7 +14,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
  # Liste des emojis de dé (un pour chaque face)
 dice_emojis = {
-    1: "gifs/dice_111.gif",
+    1: "⚀",
     2: "⚁",
     3: "⚂",
     4: "⚃",
