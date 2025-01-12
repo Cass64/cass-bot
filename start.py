@@ -34,6 +34,14 @@ async def roll(ctx):
     dice_emoji = DICE_EMOJIS[dice_result]
     # Envoyer le résultat sous forme d'emoji
     await ctx.send(f"🎲 Tu as obtenu : {dice_emoji} !")
+
+")
+async def roll5(ctx):
+    """Lance 5 dés."""
+    dice_results = [random.randint(1, 6) for _ in range(5)]  # Lancer 5 dés
+    dice_emojis = [DICE_EMOJIS[result] for result in dice_results]  # Convertir en emojis
+    results_message = " | ".join(dice_emojis)  # Joindre les résultats avec des séparateurs
+    await ctx.send(f"🎲 Résultats des 5 dés : {results_message}")
 # Quand le bot est prêt
 @bot.event
 async def on_ready():
