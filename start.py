@@ -21,6 +21,11 @@ DICE_EMOJIS = {
     5: "🎲5️⃣",
     6: "🎲6️⃣"
 }
+
+@bot.event
+async def on_ready():
+    bot.remove_command("roll")  # Supprime les doublons éventuels
+    print(f"Connecté en tant que {bot.user}")
 @bot.command(name="roll")
 async def roll(ctx):
     # Lancer un dé (1 à 6)
