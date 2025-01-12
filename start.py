@@ -35,7 +35,6 @@ async def roll(ctx):
     # Envoyer le résultat sous forme d'emoji
     await ctx.send(f"🎲 Tu as obtenu : {dice_emoji} !")
 
-")
 async def roll5(ctx):
     """Lance 5 dés."""
     dice_results = [random.randint(1, 6) for _ in range(5)]  # Lancer 5 dés
