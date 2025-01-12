@@ -12,21 +12,23 @@ token = os.getenv('TOKEN_BOT_DISCORD')
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
 
- # Liste des emojis de dé (un pour chaque face)
-dice_emojis = {
-    1: "⚀",
-    2: "⚁",
-    3: "⚂",
-    4: "⚃",
-    5: "⚄",
-    6: "⚆"
+# correspondance entre le résultat et les emojis de dés
+DICE_EMOJIS = {
+    1: "🎲1️⃣",
+    2: "🎲2️⃣",
+    3: "🎲3️⃣",
+    4: "🎲4️⃣",
+    5: "🎲5️⃣",
+    6: "🎲6️⃣"
 }
-@bot.command()
+@.command(name="roll")
 async def roll(ctx):
-    result = random.randint(1, 6)  # Lancer un dé à 6 faces
-    dice_face = dice_emojis[result]
-    await ctx.send(f'{ctx.author.name} lance un dé et obtient : {dice_face} {result}')  # Affiche l'emoji et le résultat
-
+    # Lancer un dé (1 à 6)
+    dice_result = random.randint(1, 6)
+    # Récupérer l'emoji correspondant
+    dice_emoji = DICE_EMOJIS[dice_result]
+    # Envoyer le résultat sous forme d'emoji
+    await ctx.send(f"🎲 Tu as obtenu : {dice_emoji} !")
 # Quand le bot est prêt
 @bot.event
 async def on_ready():
