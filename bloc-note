@@ -1,4 +1,19 @@
 je garde cela la au cas ou :
 
+#pour charger le dossier cogs et ses fichiers :
+
+     # Liste des cogs à charger
+        cogs = ['cogs.games', 'cogs.moderation', 'cogs.events']
+        
+        for cog in cogs:
+            # On vérifie si le cog est déjà chargé avant de le charger à nouveau
+            if cog not in self.extensions:
+                try:
+                    await self.load_extension(cog)
+                    print(f"Extension {cog} chargée avec succès.")
+                except Exception as e:
+                    print(f"Échec du chargement de {cog}: {str(e)}")
+            else:
+                print(f"Extension {cog} déjà chargée, rien à faire.")
 
 
