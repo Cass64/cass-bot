@@ -131,7 +131,7 @@ async def pierre_feuille_ciseaux(ctx, choix: str):
 #------------------------------------------------------------------------- Commandes de modération
 
 @bot.command(name="addrole")
-@commands.has_any_role("'⭐️", "・A-Keys")  # Limite la commande à ces rôles
+@commands.has_any_role("':star:", "・A-Keys")  # Limite la commande à ces rôles
 async def add_role(ctx, membre: discord.Member, role: discord.Role):
     """
     Ajoute un rôle spécifique à un utilisateur.
