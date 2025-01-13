@@ -94,12 +94,25 @@ async def roll5(ctx):
 
 @bot.command(name="pfc")
 async def pierre_feuille_ciseaux(ctx, choix: str):
-    """Joue à pierre-feuille-ciseaux avec le bot."""
-    options = ["pierre", "feuille", "ciseaux"]
+    """
+    Joue à Pierre-Feuille-Ciseaux avec le bot.
+    """
+    # Liste des options avec les emojis correspondants
+    options = {
+        "pierre": "🪨",  # Emoji pour pierre
+        "feuille": "🧻",  # Emoji pour feuille
+        "ciseaux": "✂️"   # Emoji pour ciseaux
+    }
+
+    # Vérifier si le choix est valide
     if choix.lower() not in options:
         await ctx.send("Choix invalide ! Choisissez entre `pierre`, `feuille` ou `ciseaux`.")
         return
-    bot_choice = random.choice(options)
+
+    # Le bot fait un choix aléatoire
+    bot_choice = random.choice(list(options.keys()))
+
+    # Déterminer le gagnant
     if choix.lower() == bot_choice:
         result = "Égalité ! 😐"
     elif (choix.lower() == "pierre" and bot_choice == "ciseaux") or \
@@ -108,7 +121,12 @@ async def pierre_feuille_ciseaux(ctx, choix: str):
         result = "Tu as gagné ! 🎉"
     else:
         result = "Le bot a gagné ! 😎"
-    await ctx.send(f"Tu as choisi `{choix}`, le bot a choisi `{bot_choice}`. {result}")
+
+    # Envoyer le résultat avec les emojis
+    await ctx.send(
+        f"Tu as choisi {options[choix.lower()]} (`{choix}`), "
+        f"le bot a choisi {options[bot_choice]} (`{bot_choice}`).\n{result}"
+    )
 
 
 # Démarrer le bot
