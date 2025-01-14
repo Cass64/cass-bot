@@ -71,7 +71,6 @@ async def help_command(ctx):
         ),
         inline=False
     )
-    )
 
     # Ajouter une image ou un avatar
     embed.set_thumbnail(url=bot.user.avatar.url)
@@ -114,7 +113,6 @@ async def help_slash(interaction: discord.Interaction):
             "`/removerole` : Variante slash pour retirer un rôle."
         ),
         inline=False
-    )
     )
 
     # Ajouter une image ou un avatar
