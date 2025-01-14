@@ -1,21 +1,18 @@
 import os
 from dotenv import load_dotenv
 import discord
+from discord import app_commands
 from discord.ext import commands
 import random
-from keep_alive import keep_alive
-
+import 
 load_dotenv()
 token = os.getenv('TOKEN_BOT_DISCORD')
 
-# Crée un objet bot
+# Intents et configuration du bot
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='!!', intents=intents)
+bot = commands.Bot(command_prefix="!!", intents=intents)
 
-# Dictionnaire pour stocker les rôles des membres qui quittent
-ancien_roles = {}
-
-# correspondance entre le résultat et les emojis de dés
+# Correspondance entre le résultat et les emojis de dés
 DICE_EMOJIS = {
     1: "🎲1️⃣",
     2: "🎲2️⃣",
@@ -25,12 +22,21 @@ DICE_EMOJIS = {
     6: "🎲6️⃣"
 }
 
+# Dictionnaire pour stocker les rôles des membres qui quittent
+ancien_roles = {}
+
 @bot.event
 async def on_ready():
+    """S'exécute lorsque le bot est prêt."""
     print(f"Connecté en tant que {bot.user}")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Commandes slash synchronisées : {len(synced)}")
+    except Exception as e:
+        print(f"Erreur lors de la synchronisation des commandes : {e}")
 
-#------------------------------------------------------------------------- Rôles automatiser quand on rerejoint le serv
 
+#------------------------------------------------------------------------- Rôles automatisés quand un membre rejoint/part
 @bot.event
 async def on_member_remove(member):
     """Quand un membre quitte le serveur, on stocke ses rôles."""
@@ -40,31 +46,35 @@ async def on_member_remove(member):
 async def on_member_join(member):
     """Quand un membre rejoint le serveur, on lui réattribue ses rôles."""
     if member.id in ancien_roles:
-        # Récupère les rôles sauvegardés et les attribue au membre
         roles_to_add = [discord.utils.get(member.guild.roles, id=role_id) for role_id in ancien_roles[member.id]]
-
-        # Filtrer les rôles valides (s'assurer que le rôle existe toujours)
-        roles_to_add = [role for role in roles_to_add if role is not None]
+        roles_to_add = [role for role in roles_to_add if role is not None]  # Filtrer les rôles valides
 
         if roles_to_add:
-            await member.add_roles(*roles_to_add)  # Réattribue les rôles
+            await member.add_roles(*roles_to_add)
+            print(f"Rôles réattribués à {member.display_name}")
 
 
-    await ctx.send(f"🎲 Résultats des 5 dés : {results_message}")
+#------------------------------------------------------------------------- Jeux : Lancer de dés
+@bot.tree.command(name="roll", description="Lancer un ou plusieurs dés.")
+@app_commands.describe(nombre="Nombre de dés à lancer (max 20)")
+async def roll_slash(interaction: discord.Interaction, nombre: int = 1):
+    await roll_logic(interaction, nombre, is_slash=True)
 
-#------------------------------------------------------------------------- Jeux personnalisés
 
 @bot.command(name="roll")
 async def roll(ctx, nombre: int = 1):
-    """
-    Lancer un nombre personnalisé de dés (par défaut 1).
-    Utilisation : !!roll<nombre>
-    """
+    await roll_logic(ctx, nombre, is_slash=False)
+
+
+async def roll_logic(target, nombre: int, is_slash: bool):
+    """Logique commune pour le lancer de dés."""
     if nombre <= 0:
-        await ctx.send("⚠️ Le nombre de dés doit être supérieur à 0.")
+        message = "⚠️ Le nombre de dés doit être supérieur à 0."
+        await (target.response.send_message(message, ephemeral=True) if is_slash else target.send(message))
         return
     if nombre > 20:
-        await ctx.send("⚠️ Je ne peux pas lancer plus de 20 dés à la fois.")
+        message = "⚠️ Je ne peux pas lancer plus de 20 dés à la fois."
+        await (target.response.send_message(message, ephemeral=True) if is_slash else target.send(message))
         return
 
     # Lancer les dés
@@ -73,25 +83,34 @@ async def roll(ctx, nombre: int = 1):
     results_message = " | ".join(dice_emojis)
     total = sum(dice_results)  # Calculer la somme des dés
 
-    await ctx.send(f"🎲 Résultats des {nombre} dés : {results_message}\n✨ Total : {total}")
+    message = f"🎲 Résultats des {nombre} dés : {results_message}\n✨ Total : {total}"
+    await (target.response.send_message(message) if is_slash else target.send(message))
 
-#------------------------------------------------------------------------- Jeux feuille, caillou, ciseau
+
+#------------------------------------------------------------------------- Jeux : Pierre, Feuille, Ciseaux
+@bot.tree.command(name="pierre-feuille-ciseaux", description="Joue à Pierre-Feuille-Ciseaux avec le bot.")
+@app_commands.describe(choix="Votre choix : pierre, feuille ou ciseaux")
+async def pfc_slash(interaction: discord.Interaction, choix: str):
+    await pfc_logic(interaction, choix, is_slash=True)
+
 
 @bot.command(name="pfc")
-async def pierre_feuille_ciseaux(ctx, choix: str):
-    """
-    Joue à Pierre-Feuille-Ciseaux avec le bot.
-    """
-    # Liste des options avec les emojis correspondants
+async def pfc(ctx, choix: str):
+    await pfc_logic(ctx, choix, is_slash=False)
+
+
+async def pfc_logic(target, choix: str, is_slash: bool):
+    """Logique commune pour Pierre-Feuille-Ciseaux."""
     options = {
-        "pierre": "🪨",  # Emoji pour pierre
-        "feuille": "🧻",  # Emoji pour feuille
-        "ciseaux": "✂️"   # Emoji pour ciseaux
+        "pierre": "🪨",
+        "feuille": "🧻",
+        "ciseaux": "✂️"
     }
 
     # Vérifier si le choix est valide
     if choix.lower() not in options:
-        await ctx.send("Choix invalide ! Choisissez entre `pierre`, `feuille` ou `ciseaux`.")
+        message = "Choix invalide ! Choisissez entre `pierre`, `feuille` ou `ciseaux`."
+        await (target.response.send_message(message, ephemeral=True) if is_slash else target.send(message))
         return
 
     # Le bot fait un choix aléatoire
@@ -107,89 +126,57 @@ async def pierre_feuille_ciseaux(ctx, choix: str):
     else:
         result = "Le bot a gagné ! 😎"
 
-    # Envoyer le résultat avec les emojis
-    await ctx.send(
+    message = (
         f"Tu as choisi {options[choix.lower()]} (`{choix}`), "
         f"le bot a choisi {options[bot_choice]} (`{bot_choice}`).\n{result}"
     )
+    await (target.response.send_message(message) if is_slash else target.send(message))
 
-#------------------------------------------------------------------------- Commandes de modération (addrole)
+
+#------------------------------------------------------------------------- Commandes de modération : addrole et removerole
+@bot.tree.command(name="addrole", description="Ajouter un rôle à un utilisateur.")
+@app_commands.describe(membre="L'utilisateur à qui ajouter le rôle", role="Le rôle à ajouter")
+async def addrole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
+    await role_logic(interaction, membre, role, action="add", is_slash=True)
+
 
 @bot.command(name="addrole")
-@commands.has_any_role("@'⭐️", "・A-Keys")  # Limite la commande à ces rôles
-async def add_role(ctx, membre: discord.Member, role: discord.Role):
-    """
-    Ajoute un rôle spécifique à un utilisateur.
-    Utilisation : !!addrole @utilisateur @role
-    """
-    try:
-        # Vérifie si le rôle est déjà attribué
-        if role in membre.roles:
-            await ctx.send(f"{membre.mention} a déjà le rôle {role.mention}. ✅")
-            return
+async def addrole(ctx, membre: discord.Member, role: discord.Role):
+    await role_logic(ctx, membre, role, action="add", is_slash=False)
 
-        # Ajoute le rôle au membre
-        await membre.add_roles(role)
-        await ctx.send(f"Le rôle {role.mention} a été ajouté à {membre.mention} avec succès ! 🎉")
-    except discord.Forbidden:
-        await ctx.send("❌ Je n'ai pas les permissions nécessaires pour attribuer ce rôle.")
-    except discord.HTTPException as e:
-        await ctx.send(f"❌ Une erreur s'est produite : {str(e)}")
-    except Exception as e:
-        await ctx.send(f"❌ Une erreur inconnue est survenue : {str(e)}")
 
-@add_role.error
-async def add_role_error(ctx, error):
-    """Gère les erreurs de la commande addrole."""
-    if isinstance(error, commands.MissingAnyRole):
-        await ctx.send("❌ Vous n'avez pas la permission d'utiliser cette commande.")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("❌ Utilisation incorrecte de la commande. Exemple : `!!addrole @utilisateur @role`.")
-    elif isinstance(error, commands.BadArgument):
-        await ctx.send("❌ Membre ou rôle invalide. Mentionnez correctement l'utilisateur et le rôle.")
-    else:
-        await ctx.send("❌ Une erreur inconnue est survenue.")
+@bot.tree.command(name="removerole", description="Retirer un rôle d'un utilisateur.")
+@app_commands.describe(membre="L'utilisateur à qui retirer le rôle", role="Le rôle à retirer")
+async def removerole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
+    await role_logic(interaction, membre, role, action="remove", is_slash=True)
 
-#------------------------------------------------------------------------- Commandes de modération (removerole)
 
 @bot.command(name="removerole")
-@commands.has_any_role("'⭐️", "・A-Keys")  # Remplace ces rôles par ceux qui peuvent utiliser la commande
-async def remove_role(ctx, membre: discord.Member, role: discord.Role):
-    """
-    Retire un rôle spécifique d'un utilisateur.
-    Utilisation : !!removerole @utilisateur @role
-    """
+async def removerole(ctx, membre: discord.Member, role: discord.Role):
+    await role_logic(ctx, membre, role, action="remove", is_slash=False)
+
+
+async def role_logic(target, membre: discord.Member, role: discord.Role, action: str, is_slash: bool):
+    """Logique commune pour ajouter ou retirer un rôle."""
     try:
-        # Vérifie si le rôle est déjà retiré
-        if role not in membre.roles:
-            await ctx.send(f"{membre.mention} n'a pas le rôle {role.mention}. ❌")
-            return
+        if action == "add":
+            if role in membre.roles:
+                message = f"{membre.mention} a déjà le rôle {role.mention}. ✅"
+            else:
+                await membre.add_roles(role)
+                message = f"Le rôle {role.mention} a été ajouté à {membre.mention} avec succès ! 🎉"
+        elif action == "remove":
+            if role not in membre.roles:
+                message = f"{membre.mention} n'a pas le rôle {role.mention}. ❌"
+            else:
+                await membre.remove_roles(role)
+                message = f"Le rôle {role.mention} a été retiré à {membre.mention} avec succès ! ✅"
 
-        # Retire le rôle au membre
-        await membre.remove_roles(role)
-        await ctx.send(f"Le rôle {role.mention} a été retiré à {membre.mention} avec succès ! ✅")
+        await (target.response.send_message(message) if is_slash else target.send(message))
     except discord.Forbidden:
-        await ctx.send("❌ Je n'ai pas les permissions nécessaires pour retirer ce rôle.")
-    except discord.HTTPException as e:
-        await ctx.send(f"❌ Une erreur s'est produite : {str(e)}")
-    except Exception as e:
-        await ctx.send(f"❌ Une erreur inconnue est survenue : {str(e)}")
-
-# Gérer les erreurs de la commande
-@remove_role.error
-async def remove_role_error(ctx, error):
-    """Gère les erreurs de la commande removerole."""
-    if isinstance(error, commands.MissingAnyRole):
-        await ctx.send("❌ Vous n'avez pas la permission d'utiliser cette commande.")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("❌ Utilisation incorrecte de la commande. Exemple : `!!removerole @utilisateur @role`.")
-    elif isinstance(error, commands.BadArgument):
-        await ctx.send("❌ Membre ou rôle invalide. Mentionnez correctement l'utilisateur et le rôle.")
-    else:
-        await ctx.send("❌ Une erreur inconnue est survenue.")
+        message = "❌ Je n'ai pas les permissions nécessaires pour effectuer cette action."
+        await (target.response.send_message(message, ephemeral=True) if is_slash else target.send(message))
 
 
-
-# Démarrer le bot
-keep_alive()
+#------------------------------------------------------------------------- Lancement du bot
 bot.run(token)
