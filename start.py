@@ -49,45 +49,7 @@ async def on_member_join(member):
         if roles_to_add:
             await member.add_roles(*roles_to_add)  # Réattribue les rôles
 
-#------------------------------------------------------------------------- Jeux roll (rool1--> roll5)
 
-@bot.command(name="roll")
-async def roll(ctx):
-    """Lance un dé (1 à 6)"""
-    dice_result = random.randint(1, 6)
-    dice_emoji = DICE_EMOJIS[dice_result]
-    await ctx.send(f"🎲 Tu as obtenu : {dice_emoji} !")
-
-@bot.command(name="roll2")
-async def roll2(ctx):
-    """Lance 2 dés."""
-    dice_results = [random.randint(1, 6) for _ in range(2)]
-    dice_emojis = [DICE_EMOJIS[result] for result in dice_results]
-    results_message = " | ".join(dice_emojis)
-    await ctx.send(f"🎲 Résultats des 2 dés : {results_message}")
-
-@bot.command(name="roll3")
-async def roll3(ctx):
-    """Lance 3 dés."""
-    dice_results = [random.randint(1, 6) for _ in range(3)]
-    dice_emojis = [DICE_EMOJIS[result] for result in dice_results]
-    results_message = " | ".join(dice_emojis)
-    await ctx.send(f"🎲 Résultats des 3 dés : {results_message}")
-
-@bot.command(name="roll4")
-async def roll4(ctx):
-    """Lance 4 dés."""
-    dice_results = [random.randint(1, 6) for _ in range(4)]
-    dice_emojis = [DICE_EMOJIS[result] for result in dice_results]
-    results_message = " | ".join(dice_emojis)
-    await ctx.send(f"🎲 Résultats des 4 dés : {results_message}")
-
-@bot.command(name="roll5")
-async def roll5(ctx):
-    """Lance 5 dés."""
-    dice_results = [random.randint(1, 6) for _ in range(5)]
-    dice_emojis = [DICE_EMOJIS[result] for result in dice_results]
-    results_message = " | ".join(dice_emojis)
     await ctx.send(f"🎲 Résultats des 5 dés : {results_message}")
 
 #------------------------------------------------------------------------- Jeux personnalisés
