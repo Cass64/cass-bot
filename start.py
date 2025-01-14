@@ -28,7 +28,9 @@ ancien_roles = {}
 @bot.event
 async def on_ready():
     """S'exécute lorsque le bot est prêt."""
-    print(f"Connecté en tant que {bot.user}")
+     # Définir le statut du bot sur invisible
+    await bot.change_presence(status=discord.Status.invisible)
+    print(f"Bot connecté mais invisible en tant que {bot.user}")
     try:
         synced = await bot.tree.sync()
         print(f"Commandes slash synchronisées : {len(synced)}")
