@@ -173,7 +173,11 @@ async def roll_logic(target, nombre: int, is_slash: bool):
     total = sum(dice_results)  # Calculer la somme des dés
 
     message = f"🎲 Résultats des {nombre} dés : {results_message}\n✨ Total : {total}"
-    await (target.response.send_message(message) if is_slash else target.send(message))
+
+ if is_slash:
+        await target.followup.send(message)  # Utilisation de followup.send pour éviter l'erreur d'interaction
+    else:
+        await target.send(message)
 
 
 #------------------------------------------------------------------------- Jeux : Pierre, Feuille, Ciseaux
