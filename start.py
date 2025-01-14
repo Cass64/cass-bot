@@ -154,7 +154,7 @@ async def pierre_feuille_ciseaux(ctx, choix: str):
 #------------------------------------------------------------------------- Commandes de modération (addrole)
 
 @bot.command(name="addrole")
-@commands.has_any_role("':star:", "・A-Keys")  # Limite la commande à ces rôles
+@commands.has_any_role("@'⭐️", "・A-Keys")  # Limite la commande à ces rôles
 async def add_role(ctx, membre: discord.Member, role: discord.Role):
     """
     Ajoute un rôle spécifique à un utilisateur.
@@ -191,7 +191,7 @@ async def add_role_error(ctx, error):
 #------------------------------------------------------------------------- Commandes de modération (removerole)
 
 @bot.command(name="removerole")
-@commands.has_any_role("':star:", "・A-Keys")  # Remplace ces rôles par ceux qui peuvent utiliser la commande
+@commands.has_any_role("'⭐️", "・A-Keys")  # Remplace ces rôles par ceux qui peuvent utiliser la commande
 async def remove_role(ctx, membre: discord.Member, role: discord.Role):
     """
     Retire un rôle spécifique d'un utilisateur.
