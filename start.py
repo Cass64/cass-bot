@@ -174,8 +174,9 @@ async def roll_logic(target, nombre: int, is_slash: bool):
 
     message = f"🎲 Résultats des {nombre} dés : {results_message}\n✨ Total : {total}"
 
- if is_slash:
-        await target.followup.send(message)  # Utilisation de followup.send pour éviter l'erreur d'interaction
+if is_slash:
+        await target.response.send_message("Traitement en cours...")  # Réponse initiale
+        await target.followup.send(message)  # Utilisation de followup pour envoyer les résultats
     else:
         await target.send(message)
 
