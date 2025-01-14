@@ -111,7 +111,7 @@ async def rollp(ctx, nombre: int = 1):
     results_message = " | ".join(dice_emojis)
     total = sum(dice_results)  # Calculer la somme des dés
 
-    await ctx.send(f"🎲 Résultats des {nombre} dés : {results
+    await ctx.send(f"🎲 Résultats des {nombre} dés : {results_message}\n✨ Total : {total}")
 
 #------------------------------------------------------------------------- Jeux feuille, caillou, ciseau
 
