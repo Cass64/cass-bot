@@ -90,6 +90,8 @@ async def roll5(ctx):
     results_message = " | ".join(dice_emojis)
     await ctx.send(f"🎲 Résultats des 5 dés : {results_message}")
 
+#------------------------------------------------------------------------- Jeux personnalisés
+
 #------------------------------------------------------------------------- Jeux feuille, caillou, ciseau
 
 @bot.command(name="pfc")
