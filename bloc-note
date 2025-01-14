@@ -1,3 +1,5 @@
+#------------------------------------------------------------------------- charger le dossier cogs et ses fichiers
+
 je garde cela la au cas ou :
 
 #pour charger le dossier cogs et ses fichiers :
@@ -15,6 +17,8 @@ je garde cela la au cas ou :
                     print(f"Échec du chargement de {cog}: {str(e)}")
             else:
                 print(f"Extension {cog} déjà chargée, rien à faire.")
+
+#------------------------------------------------------------------------- main avant grand changement
 
 
      #Le code start.py avant grand changement
