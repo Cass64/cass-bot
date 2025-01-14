@@ -228,30 +228,27 @@ async def pfc_logic(target, choix: str, is_slash: bool):
 
 
 #------------------------------------------------------------------------- Commandes de modération : addrole et removerole
-@bot.tree.command(name="addrole", description="Ajouter un rôle à un utilisateur.")
-@app_commands.describe(membre="L'utilisateur à qui ajouter le rôle", role="Le rôle à ajouter")
-async def addrole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
-    await role_logic(interaction, membre, role, action="add", is_slash=True)
 
+from discord.ext import commands
 
-@bot.command(name="addrole")
-async def addrole(ctx, membre: discord.Member, role: discord.Role):
-    await role_logic(ctx, membre, role, action="add", is_slash=False)
+# Liste des rôles autorisés pour exécuter les commandes de modération
+AUTHORIZED_ROLES = ['', 'Kage']
 
-
-@bot.tree.command(name="removerole", description="Retirer un rôle d'un utilisateur.")
-@app_commands.describe(membre="L'utilisateur à qui retirer le rôle", role="Le rôle à retirer")
-async def removerole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
-    await role_logic(interaction, membre, role, action="remove", is_slash=True)
-
-
-@bot.command(name="removerole")
-async def removerole(ctx, membre: discord.Member, role: discord.Role):
-    await role_logic(ctx, membre, role, action="remove", is_slash=False)
-
+def check_permissions(ctx):
+    """Vérifie si l'utilisateur a un rôle autorisé pour exécuter la commande."""
+    for role in ctx.author.roles:
+        if role.name in AUTHORIZED_ROLES:
+            return True
+    return False
 
 async def role_logic(target, membre: discord.Member, role: discord.Role, action: str, is_slash: bool):
     """Logique commune pour ajouter ou retirer un rôle."""
+    
+    if not check_permissions(target):
+        message = "❌ Vous n'avez pas les permissions nécessaires pour exécuter cette commande."
+        await (target.response.send_message(message, ephemeral=True) if is_slash else target.send(message))
+        return
+    
     try:
         if action == "add":
             if role in membre.roles:
@@ -270,6 +267,27 @@ async def role_logic(target, membre: discord.Member, role: discord.Role, action:
     except discord.Forbidden:
         message = "❌ Je n'ai pas les permissions nécessaires pour effectuer cette action."
         await (target.response.send_message(message, ephemeral=True) if is_slash else target.send(message))
+
+# Commande "addrole"
+@bot.tree.command(name="addrole", description="Ajouter un rôle à un utilisateur.")
+@app_commands.describe(membre="L'utilisateur à qui ajouter le rôle", role="Le rôle à ajouter")
+async def addrole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
+    await role_logic(interaction, membre, role, action="add", is_slash=True)
+
+@bot.command(name="addrole")
+async def addrole(ctx, membre: discord.Member, role: discord.Role):
+    await role_logic(ctx, membre, role, action="add", is_slash=False)
+
+# Commande "removerole"
+@bot.tree.command(name="removerole", description="Retirer un rôle d'un utilisateur.")
+@app_commands.describe(membre="L'utilisateur à qui retirer le rôle", role="Le rôle à retirer")
+async def removerole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
+    await role_logic(interaction, membre, role, action="remove", is_slash=True)
+
+@bot.command(name="removerole")
+async def removerole(ctx, membre: discord.Member, role: discord.Role):
+    await role_logic(ctx, membre, role, action="remove", is_slash=False)
+
 
 
 #------------------------------------------------------------------------- Lancement du bot
