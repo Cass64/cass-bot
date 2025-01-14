@@ -38,7 +38,7 @@ async def on_ready():
         print(f"Erreur lors de la synchronisation des commandes : {e}")
 
 #------------------------------------------------------------------------- Menu Help
-
+bot.remove_command("help")
 @bot.command(name="help")
 async def help_command(ctx):
     """Affiche un joli message d'aide avec des catégories."""
