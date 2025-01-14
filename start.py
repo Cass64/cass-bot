@@ -151,7 +151,7 @@ async def pierre_feuille_ciseaux(ctx, choix: str):
         f"le bot a choisi {options[bot_choice]} (`{bot_choice}`).\n{result}"
     )
 
-#------------------------------------------------------------------------- Commandes de modération
+#------------------------------------------------------------------------- Commandes de modération (addrole)
 
 @bot.command(name="addrole")
 @commands.has_any_role("':star:", "・A-Keys")  # Limite la commande à ces rôles
@@ -183,6 +183,44 @@ async def add_role_error(ctx, error):
         await ctx.send("❌ Vous n'avez pas la permission d'utiliser cette commande.")
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("❌ Utilisation incorrecte de la commande. Exemple : `!!addrole @utilisateur @role`.")
+    elif isinstance(error, commands.BadArgument):
+        await ctx.send("❌ Membre ou rôle invalide. Mentionnez correctement l'utilisateur et le rôle.")
+    else:
+        await ctx.send("❌ Une erreur inconnue est survenue.")
+
+#------------------------------------------------------------------------- Commandes de modération (removerole)
+
+@bot.command(name="removerole")
+@commands.has_any_role("':star:", "・A-Keys")  # Remplace ces rôles par ceux qui peuvent utiliser la commande
+async def remove_role(ctx, membre: discord.Member, role: discord.Role):
+    """
+    Retire un rôle spécifique d'un utilisateur.
+    Utilisation : !!removerole @utilisateur @role
+    """
+    try:
+        # Vérifie si le rôle est déjà retiré
+        if role not in membre.roles:
+            await ctx.send(f"{membre.mention} n'a pas le rôle {role.mention}. ❌")
+            return
+
+        # Retire le rôle au membre
+        await membre.remove_roles(role)
+        await ctx.send(f"Le rôle {role.mention} a été retiré à {membre.mention} avec succès ! ✅")
+    except discord.Forbidden:
+        await ctx.send("❌ Je n'ai pas les permissions nécessaires pour retirer ce rôle.")
+    except discord.HTTPException as e:
+        await ctx.send(f"❌ Une erreur s'est produite : {str(e)}")
+    except Exception as e:
+        await ctx.send(f"❌ Une erreur inconnue est survenue : {str(e)}")
+
+# Gérer les erreurs de la commande
+@remove_role.error
+async def remove_role_error(ctx, error):
+    """Gère les erreurs de la commande removerole."""
+    if isinstance(error, commands.MissingAnyRole):
+        await ctx.send("❌ Vous n'avez pas la permission d'utiliser cette commande.")
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("❌ Utilisation incorrecte de la commande. Exemple : `!!removerole @utilisateur @role`.")
     elif isinstance(error, commands.BadArgument):
         await ctx.send("❌ Membre ou rôle invalide. Mentionnez correctement l'utilisateur et le rôle.")
     else:
