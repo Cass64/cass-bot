@@ -37,6 +37,95 @@ async def on_ready():
     except Exception as e:
         print(f"Erreur lors de la synchronisation des commandes : {e}")
 
+#------------------------------------------------------------------------- Menu Help
+
+@bot.command(name="help")
+async def help_command(ctx):
+    """Affiche un joli message d'aide avec des catégories."""
+    embed = discord.Embed(
+        title="📖 Aide du Bot",
+        description="Voici les différentes commandes disponibles :",
+        color=discord.Color.blurple()  # Couleur principale de l'embed
+    )
+
+    # Catégorie Jeux
+    embed.add_field(
+        name="🎲 **Jeux**",
+        value=(
+            "`!!roll [nombre]` : Lance un ou plusieurs dés (max 20).\n"
+            "`/roll [nombre]` : Variante slash pour lancer des dés.\n"
+            "`!!pfc <pierre|feuille|ciseaux>` : Joue à Pierre-Feuille-Ciseaux.\n"
+            "`/pierre-feuille-ciseaux` : Variante slash pour Pierre-Feuille-Ciseaux."
+        ),
+        inline=False
+    )
+
+    # Catégorie Modération
+    embed.add_field(
+        name="🔨 **Modération**",
+        value=(
+            "`!!addrole @utilisateur @role` : Ajoute un rôle à un utilisateur.\n"
+            "`!!removerole @utilisateur @role` : Retire un rôle d'un utilisateur.\n"
+            "`/addrole` : Variante slash pour ajouter un rôle.\n"
+            "`/removerole` : Variante slash pour retirer un rôle."
+        ),
+        inline=False
+    )
+    )
+
+    # Ajouter une image ou un avatar
+    embed.set_thumbnail(url=bot.user.avatar.url)
+
+    # Note en bas du message
+    embed.set_footer(text="Merciii d'utiliser mon bot !!!")
+
+    # Envoyer l'embed
+    await ctx.send(embed=embed)
+
+
+@bot.tree.command(name="help", description="Affiche un joli message d'aide avec des catégories.")
+async def help_slash(interaction: discord.Interaction):
+    """Affiche un joli message d'aide en tant que commande slash."""
+    embed = discord.Embed(
+        title="📖 Aide du Bot",
+        description="Voici les différentes commandes disponibles :",
+        color=discord.Color.blurple()  # Couleur principale de l'embed
+    )
+
+    # Catégorie Jeux
+    embed.add_field(
+        name="🎲 **Jeux**",
+        value=(
+            "`!!roll [nombre]` : Lance un ou plusieurs dés (max 20).\n"
+            "`/roll [nombre]` : Variante slash pour lancer des dés.\n"
+            "`!!pfc <pierre|feuille|ciseaux>` : Joue à Pierre-Feuille-Ciseaux.\n"
+            "`/pierre-feuille-ciseaux` : Variante slash pour Pierre-Feuille-Ciseaux."
+        ),
+        inline=False
+    )
+
+    # Catégorie Modération
+    embed.add_field(
+        name="🔨 **Modération**",
+        value=(
+            "`!!addrole @utilisateur @role` : Ajoute un rôle à un utilisateur.\n"
+            "`!!removerole @utilisateur @role` : Retire un rôle d'un utilisateur.\n"
+            "`/addrole` : Variante slash pour ajouter un rôle.\n"
+            "`/removerole` : Variante slash pour retirer un rôle."
+        ),
+        inline=False
+    )
+    )
+
+    # Ajouter une image ou un avatar
+    embed.set_thumbnail(url=bot.user.avatar.url)
+
+    # Note en bas du message
+    embed.set_footer(text="Merciii d'utiliser mon bot !!!")
+
+    # Réponse de la commande slash
+    await interaction.response.send_message(embed=embed)
+
 
 #------------------------------------------------------------------------- Rôles automatisés quand un membre rejoint/part
 @bot.event
