@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import random
-import 
+from keep_alive import keep_alive
 load_dotenv()
 token = os.getenv('TOKEN_BOT_DISCORD')
 
@@ -179,4 +179,5 @@ async def role_logic(target, membre: discord.Member, role: discord.Role, action:
 
 
 #------------------------------------------------------------------------- Lancement du bot
+keep_alive()
 bot.run(token)
