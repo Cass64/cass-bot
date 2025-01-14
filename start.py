@@ -54,11 +54,11 @@ async def on_member_join(member):
 
 #------------------------------------------------------------------------- Jeux personnalisés
 
-@bot.command(name="rollp")
-async def rollp(ctx, nombre: int = 1):
+@bot.command(name="roll")
+async def roll(ctx, nombre: int = 1):
     """
     Lancer un nombre personnalisé de dés (par défaut 1).
-    Utilisation : !!rollp<nombre>
+    Utilisation : !!roll<nombre>
     """
     if nombre <= 0:
         await ctx.send("⚠️ Le nombre de dés doit être supérieur à 0.")
