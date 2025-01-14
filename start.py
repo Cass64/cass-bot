@@ -177,7 +177,7 @@ async def roll_logic(target, nombre: int, is_slash: bool):
 if is_slash:
         await target.response.send_message("Traitement en cours...")  # Réponse initiale
         await target.followup.send(message)  # Utilisation de followup pour envoyer les résultats
-    else:
+else:
         await target.send(message)
 
 
