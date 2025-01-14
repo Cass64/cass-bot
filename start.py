@@ -92,6 +92,27 @@ async def roll5(ctx):
 
 #------------------------------------------------------------------------- Jeux personnalisés
 
+@bot.command(name="rollp")
+async def rollp(ctx, nombre: int = 1):
+    """
+    Lancer un nombre personnalisé de dés (par défaut 1).
+    Utilisation : !!rollp<nombre>
+    """
+    if nombre <= 0:
+        await ctx.send("⚠️ Le nombre de dés doit être supérieur à 0.")
+        return
+    if nombre > 20:
+        await ctx.send("⚠️ Je ne peux pas lancer plus de 20 dés à la fois.")
+        return
+
+    # Lancer les dés
+    dice_results = [random.randint(1, 6) for _ in range(nombre)]
+    dice_emojis = [DICE_EMOJIS[result] for result in dice_results]
+    results_message = " | ".join(dice_emojis)
+    total = sum(dice_results)  # Calculer la somme des dés
+
+    await ctx.send(f"🎲 Résultats des {nombre} dés : {results
+
 #------------------------------------------------------------------------- Jeux feuille, caillou, ciseau
 
 @bot.command(name="pfc")
