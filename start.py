@@ -174,12 +174,12 @@ async def roll_logic(target, nombre: int, is_slash: bool):
 
     message = f"🎲 Résultats des {nombre} dés : {results_message}\n✨ Total : {total}"
 
-if is_slash:
+    # Si c'est une commande slash, utiliser la méthode followup
+    if is_slash:
         await target.response.send_message("Traitement en cours...")  # Réponse initiale
         await target.followup.send(message)  # Utilisation de followup pour envoyer les résultats
-else:
-        await target.send(message)
-
+    else:
+        await target.send(message)  # Envoi du message si ce n'est pas une commande slash
 
 #------------------------------------------------------------------------- Jeux : Pierre, Feuille, Ciseaux
 @bot.tree.command(name="pierre-feuille-ciseaux", description="Joue à Pierre-Feuille-Ciseaux avec le bot.")
