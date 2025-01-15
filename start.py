@@ -272,6 +272,7 @@ async def role_logic(target, membre: discord.Member, role: discord.Role, action:
 @bot.tree.command(name="addrole", description="Ajouter un rôle à un utilisateur.")
 @app_commands.describe(membre="L'utilisateur à qui ajouter le rôle", role="Le rôle à ajouter")
 async def addrole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
+    await interaction.response.defer() # Déclare que le bot va répondre plus tard
     await role_logic(interaction, membre, role, action="add", is_slash=True)
 
 @bot.command(name="addrole")
@@ -282,6 +283,7 @@ async def addrole(ctx, membre: discord.Member, role: discord.Role):
 @bot.tree.command(name="removerole", description="Retirer un rôle d'un utilisateur.")
 @app_commands.describe(membre="L'utilisateur à qui retirer le rôle", role="Le rôle à retirer")
 async def removerole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
+    await interaction.response.defer() # Déclare que le bot va répondre plus tard
     await role_logic(interaction, membre, role, action="remove", is_slash=True)
 
 @bot.command(name="removerole")
