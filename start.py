@@ -280,7 +280,17 @@ async def addrole(ctx, membre: discord.Member, role: discord.Role):
 async def removerole(ctx, membre: discord.Member, role: discord.Role):
     await role_logic(ctx, membre, role, action="remove", is_slash=False)
 
+#------------------------------------------------------------------------- Commandes Slash : addrole et removerole
 
+@bot.tree.command(name="addrole", description="Ajoute un rôle à un utilisateur.")
+@app_commands.describe(membre="Le membre à qui ajouter le rôle", role="Le rôle à ajouter")
+async def addrole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
+    await role_logic(interaction, membre, role, action="add", is_slash=True)
+
+@bot.tree.command(name="removerole", description="Retire un rôle d'un utilisateur.")
+@app_commands.describe(membre="Le membre à qui retirer le rôle", role="Le rôle à retirer")
+async def removerole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
+    await role_logic(interaction, membre, role, action="remove", is_slash=True)
 
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
