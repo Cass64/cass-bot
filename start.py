@@ -282,15 +282,56 @@ async def removerole(ctx, membre: discord.Member, role: discord.Role):
 
 #------------------------------------------------------------------------- Commandes Slash : addrole et removerole
 
+async def check_permissions(interaction: discord.Interaction) -> bool:
+    """Vérifie si l'utilisateur a un rôle autorisé pour exécuter la commande."""
+    user_roles = [role.name for role in interaction.user.roles]
+    return any(role in AUTHORIZED_ROLES for role in user_roles)
+
+async def role_logic_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role, action: str):
+    """Logique commune pour ajouter ou retirer un rôle avec une commande slash."""
+    if not await check_permissions(interaction):
+        await interaction.response.send_message(
+            "❌ Vous n'avez pas les permissions nécessaires pour exécuter cette commande.",
+            ephemeral=True,
+        )
+        return
+
+    try:
+        if action == "add":
+            if role in membre.roles:
+                message = f"{membre.mention} a déjà le rôle {role.mention}. ✅"
+            else:
+                await membre.add_roles(role)
+                message = f"Le rôle {role.mention} a été ajouté à {membre.mention} avec succès ! 🎉"
+        elif action == "remove":
+            if role not in membre.roles:
+                message = f"{membre.mention} n'a pas le rôle {role.mention}. ❌"
+            else:
+                await membre.remove_roles(role)
+                message = f"Le rôle {role.mention} a été retiré à {membre.mention} avec succès ! ✅"
+
+        await interaction.response.send_message(message)
+    except discord.Forbidden:
+        await interaction.response.send_message(
+            "❌ Je n'ai pas les permissions nécessaires pour effectuer cette action.",
+            ephemeral=True,
+        )
+    except discord.HTTPException as e:
+        await interaction.response.send_message(
+            f"❌ Une erreur s'est produite lors de l'exécution de la commande : {e}",
+            ephemeral=True,
+        )
+
 @bot.tree.command(name="addrole", description="Ajoute un rôle à un utilisateur.")
 @app_commands.describe(membre="Le membre à qui ajouter le rôle", role="Le rôle à ajouter")
 async def addrole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
-    await role_logic(interaction, membre, role, action="add", is_slash=True)
+    await role_logic_slash(interaction, membre, role, action="add")
 
 @bot.tree.command(name="removerole", description="Retire un rôle d'un utilisateur.")
 @app_commands.describe(membre="Le membre à qui retirer le rôle", role="Le rôle à retirer")
 async def removerole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
-    await role_logic(interaction, membre, role, action="remove", is_slash=True)
+    await role_logic_slash(interaction, membre, role, action="remove")
+
 
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
