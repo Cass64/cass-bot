@@ -282,6 +282,7 @@ async def removerole(ctx, membre: discord.Member, role: discord.Role):
 
 #------------------------------------------------------------------------- Commandes Slash : addrole et removerole
 
+
 async def check_permissions(interaction: discord.Interaction) -> bool:
     """Vérifie si l'utilisateur a un rôle autorisé pour exécuter la commande."""
     user_roles = [role.name for role in interaction.user.roles]
