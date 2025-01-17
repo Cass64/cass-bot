@@ -5,7 +5,26 @@ from discord import app_commands
 from discord.ext import commands
 import random
 from keep_alive import keep_alive
+import json
+
+# Nom du fichier JSON
+SANCTIONS_FILE = "sanctions.json"
+
+# Charger les sanctions depuis le fichier JSON
+def load_sanctions():
+    if os.path.exists(SANCTIONS_FILE):
+        with open(SANCTIONS_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+# Sauvegarder les sanctions dans le fichier JSON
+def save_sanctions():
+    with open(SANCTIONS_FILE, "w") as f:
+        json.dump(sanctions, f, indent=4)
+    sanctions = load_sanctions()
 load_dotenv()
+
+
 token = os.getenv('TOKEN_BOT_DISCORD')
 
 # Intents et configuration du bot
