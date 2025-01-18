@@ -338,7 +338,7 @@ async def removerole_slash(interaction: discord.Interaction, membre: discord.Mem
 
 #------------------------------------------------------------------------- Sanction lister
 
-AUTHORIZED_ROLES2 = ["・Garde Royale"]
+AUTHORIZED_ROLES2 = ["・A-Keys", "Kage", "'⭐️", "・Garde Royale"]
 
 @bot.tree.command(name="sanction", description="Afficher les sanctions émises pour un utilisateur.")
 @app_commands.describe(member="L'utilisateur dont vous voulez voir les sanctions.")
