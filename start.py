@@ -5,6 +5,25 @@ from discord import app_commands
 from discord.ext import commands
 import random
 from keep_alive import keep_alive
+import json
+
+SANCTION_FILE = "sanctions.json"
+
+def load_sanctions():
+    """Charge les sanctions depuis le fichier JSON."""
+    try:
+        with open(SANCTION_FILE, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        return {}
+
+def save_sanctions(data):
+    """Sauvegarde les sanctions dans le fichier JSON."""
+    with open(SANCTION_FILE, "w") as file:
+        json.dump(data, file, indent=4)
+
 
 load_dotenv()
 
@@ -343,7 +362,7 @@ AUTHORIZED_ROLES2 = ["・A-Keys", "Kage", "'⭐️", "・Garde Royale"]
 @bot.tree.command(name="sanction", description="Afficher les sanctions émises pour un utilisateur.")
 @app_commands.describe(member="L'utilisateur dont vous voulez voir les sanctions.")
 async def sanction(interaction: discord.Interaction, member: discord.Member):
-    """Affiche les sanctions depuis les logs d'audit pour un membre."""
+    """Affiche les sanctions depuis les logs d'audit pour un membre et les sauvegarde dans un fichier JSON."""
     guild = interaction.guild
 
     # Vérification des permissions par rôle
@@ -357,6 +376,8 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
 
     await interaction.response.defer()  # Évite les timeouts de Discord
 
+    # Charger les sanctions existantes
+    sanctions_data = load_sanctions()
     sanctions_count = 0
     embed = discord.Embed(
         title=f"Sanctions pour {member.display_name}",
@@ -367,7 +388,7 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
     embed.set_footer(text=f"Commande exécutée par {interaction.user}", icon_url=interaction.user.avatar.url)
 
     try:
-        async for log in guild.audit_logs(limit=20):  # Limitez à 20 logs pour réduire le traitement
+        async for log in guild.audit_logs(limit=50):  # Limitez à 50 logs pour éviter la surcharge
             if log.target.id == member.id and log.action in [
                 discord.AuditLogAction.kick,
                 discord.AuditLogAction.ban,
@@ -378,11 +399,28 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
                 sanctions_count += 1
                 action_name = log.action.name.replace("_", " ").capitalize()
                 reason = log.reason if log.reason else "Aucune raison fournie"
+
+                # Ajouter au fichier JSON
+                if str(member.id) not in sanctions_data:
+                    sanctions_data[str(member.id)] = []
+
+                sanctions_data[str(member.id)].append({
+                    "action": action_name,
+                    "moderator": log.user.id,
+                    "date": log.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                    "reason": reason
+                })
+
+                # Ajouter à l'embed pour afficher en temps réel
                 embed.add_field(
                     name=f"Action : {action_name}",
                     value=f"Effectuée par : {log.user.mention}\nDate : {log.created_at.strftime('%Y-%m-%d %H:%M:%S')}\nRaison : {reason}",
                     inline=False
                 )
+
+        # Sauvegarder les sanctions mises à jour
+        save_sanctions(sanctions_data)
+
     except Exception as e:
         embed.description = f"Erreur lors de l'analyse des logs : {e}"
         sanctions_count = 0
