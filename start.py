@@ -353,8 +353,8 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
         )
         return
 
-    logs = await guild.audit_logs(limit=50).flatten()  # Charger les 50 dernières actions
-
+    # Lecture des logs d'audit
+    sanctions_count = 0
     embed = discord.Embed(
         title=f"Sanctions pour {member.display_name}",
         description=f"Historique des sanctions appliquées à {member.mention}.",
@@ -363,8 +363,7 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
     embed.set_thumbnail(url=member.avatar.url if member.avatar else guild.icon.url)
     embed.set_footer(text=f"Commande exécutée par {interaction.user}", icon_url=interaction.user.avatar.url)
 
-    sanctions_count = 0
-    for log in logs:
+    async for log in guild.audit_logs(limit=50):
         if log.target.id == member.id and log.action in [
             discord.AuditLogAction.kick,
             discord.AuditLogAction.ban,
@@ -385,7 +384,6 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
         embed.description = "Aucune sanction trouvée pour cet utilisateur."
 
     await interaction.response.send_message(embed=embed)
-
 
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
