@@ -428,6 +428,45 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
         embed.description = "Aucune sanction trouvée pour cet utilisateur."
 
     await interaction.followup.send(embed=embed)
+    
+#------------------------------------------------------------------------- Course de cheveaux
+
+@bot.command(name="course")
+async def horse_race(ctx):
+    """Lance une course de chevaux avec animation !"""
+    # Initialiser la piste et les chevaux
+    chevaux = ["🐎", "🐴", "🦄", "🐐"]
+    piste_longueur = 20  # Longueur de la piste
+    positions = [0] * len(chevaux)  # Positions de départ des chevaux
+
+    # Construire une représentation visuelle initiale
+    def construire_piste():
+        piste = []
+        for i, cheval in enumerate(chevaux):
+            espace = " " * positions[i]
+            ligne = f"{cheval}{espace}|{'-' * (piste_longueur - positions[i])}🏁"
+            piste.append(ligne)
+        return "\n".join(piste)
+
+    # Envoyer le message initial
+    message = await ctx.send("🚩 **La course commence !** 🚩\n" + construire_piste())
+
+    # Animation de la course
+    gagnant = None
+    while not gagnant:
+        await asyncio.sleep(1)  # Attendre un peu avant de mettre à jour
+        for i in range(len(chevaux)):
+            avance = random.randint(1, 3)  # Les chevaux avancent de manière aléatoire
+            positions[i] += avance
+            if positions[i] >= piste_longueur:
+                gagnant = chevaux[i]
+                break
+
+        # Mettre à jour le message avec la nouvelle position
+        await message.edit(content="🚩 **La course continue !** 🚩\n" + construire_piste())
+
+    # Annoncer le gagnant
+    await ctx.send(f"🎉 **{gagnant} a gagné la course !** 🏆")
 
 
 #------------------------------------------------------------------------- Lancement du bot
