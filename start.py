@@ -353,37 +353,43 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
         )
         return
 
-    # Lecture des logs d'audit
+    await interaction.response.defer()  # Évite les timeouts de Discord
+
     sanctions_count = 0
     embed = discord.Embed(
         title=f"Sanctions pour {member.display_name}",
         description=f"Historique des sanctions appliquées à {member.mention}.",
         color=discord.Color.red()
     )
-    embed.set_thumbnail(url=member.avatar.url if member.avatar else guild.icon.url)
+    embed.set_thumbnail(url=member.avatar.url if member.avatar else guild.icon.url if guild.icon else None)
     embed.set_footer(text=f"Commande exécutée par {interaction.user}", icon_url=interaction.user.avatar.url)
 
-    async for log in guild.audit_logs(limit=50):
-        if log.target.id == member.id and log.action in [
-            discord.AuditLogAction.kick,
-            discord.AuditLogAction.ban,
-            discord.AuditLogAction.unban,
-            discord.AuditLogAction.mute,
-            discord.AuditLogAction.unmute
-        ]:
-            sanctions_count += 1
-            action_name = log.action.name.replace("_", " ").capitalize()
-            reason = log.reason if log.reason else "Aucune raison fournie"
-            embed.add_field(
-                name=f"Action : {action_name}",
-                value=f"Effectuée par : {log.user.mention}\nDate : {log.created_at.strftime('%Y-%m-%d %H:%M:%S')}\nRaison : {reason}",
-                inline=False
-            )
+    try:
+        async for log in guild.audit_logs(limit=20):  # Limitez à 20 logs pour réduire le traitement
+            if log.target.id == member.id and log.action in [
+                discord.AuditLogAction.kick,
+                discord.AuditLogAction.ban,
+                discord.AuditLogAction.unban,
+                discord.AuditLogAction.mute,
+                discord.AuditLogAction.unmute
+            ]:
+                sanctions_count += 1
+                action_name = log.action.name.replace("_", " ").capitalize()
+                reason = log.reason if log.reason else "Aucune raison fournie"
+                embed.add_field(
+                    name=f"Action : {action_name}",
+                    value=f"Effectuée par : {log.user.mention}\nDate : {log.created_at.strftime('%Y-%m-%d %H:%M:%S')}\nRaison : {reason}",
+                    inline=False
+                )
+    except Exception as e:
+        embed.description = f"Erreur lors de l'analyse des logs : {e}"
+        sanctions_count = 0
 
     if sanctions_count == 0:
         embed.description = "Aucune sanction trouvée pour cet utilisateur."
 
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
+
 
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
