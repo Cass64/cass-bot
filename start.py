@@ -6,6 +6,7 @@ from discord.ext import commands
 import random
 from keep_alive import keep_alive
 import json
+import asyncio
 
 SANCTION_FILE = "sanctions.json"
 
