@@ -463,7 +463,7 @@ async def horse_race(ctx):
     global pari_en_cours, paris
 
     chevaux = ["🐎", "🐴", "🦄", "🐐"]  # Les chevaux
-    piste_longueur = 30  # Longueur de la piste
+    piste_longueur = 20  # Longueur de la piste
     positions = [0] * len(chevaux)  # Positions de départ
     pari_en_cours = True  # Les paris sont ouverts
     paris = {}  # Réinitialiser les paris
@@ -476,7 +476,7 @@ async def horse_race(ctx):
         "Les chevaux participants :\n"
         + "\n".join([f"{i + 1}. {chevaux[i]}" for i in range(len(chevaux))])
     )
-    await asyncio.sleep(15)  # Temps pour les paris
+    await asyncio.sleep(20)  # Temps pour les paris rallongé
 
     pari_en_cours = False  # Fermeture des paris
     await ctx.send("⏳ Les paris sont fermés ! La course commence maintenant ! 🏁")
@@ -485,8 +485,9 @@ async def horse_race(ctx):
     def construire_piste():
         piste = []
         for i, cheval in enumerate(chevaux):
-            progress = "—" * positions[i] + cheval + " " * (piste_longueur - positions[i])
-            piste.append(f"{progress}🏁")
+            progress = "—" * positions[i] + cheval
+            space = " " * (piste_longueur - positions[i] - 1)
+            piste.append(f"{progress}{space}🏁")
         return "\n".join(piste)
 
     # Envoyer le message initial
@@ -495,9 +496,9 @@ async def horse_race(ctx):
     # Animation de la course
     gagnant = None
     while not gagnant:
-        await asyncio.sleep(1)  # Attendre un peu avant de mettre à jour
+        await asyncio.sleep(0.5)  # Temps plus court pour plus de fluidité
         for i in range(len(chevaux)):
-            avance = random.randint(1, 3)  # Les chevaux avancent aléatoirement
+            avance = random.randint(1, 2)  # Les chevaux avancent aléatoirement (plus lent pour fluidité)
             positions[i] += avance
             if positions[i] >= piste_longueur:
                 gagnant = i + 1  # Le gagnant est trouvé
