@@ -254,7 +254,7 @@ async def pfc_logic(target, choix: str, is_slash: bool):
 from discord.ext import commands
 
 # Liste des rôles autorisés pour exécuter les commandes de modération
-AUTHORIZED_ROLES = ["・A-Keys", "Kage", "'⭐️"]
+AUTHORIZED_ROLES = ["・A-Keys", "Kage", "'⭐️", "・Garde Royale"]
 
 def check_permissions(ctx):
     """Vérifie si l'utilisateur a un rôle autorisé pour exécuter la commande."""
@@ -357,7 +357,6 @@ async def removerole_slash(interaction: discord.Interaction, membre: discord.Mem
 
 #------------------------------------------------------------------------- Sanction lister
 
-AUTHORIZED_ROLES2 = ["・A-Keys", "Kage", "'⭐️", "・Garde Royale"]
 
 @bot.tree.command(name="sanction", description="Afficher les sanctions émises pour un utilisateur.")
 @app_commands.describe(member="L'utilisateur dont vous voulez voir les sanctions.")
@@ -367,7 +366,7 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
 
     # Vérification des permissions par rôle
     user_roles = [role.name for role in interaction.user.roles]
-    if not any(role in AUTHORIZED_ROLES2 for role in user_roles):
+    if not any(role in AUTHORIZED_ROLES for role in user_roles):
         await interaction.response.send_message(
             "Vous n'avez pas la permission d'utiliser cette commande.", 
             ephemeral=True
