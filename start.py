@@ -5,23 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 import random
 from keep_alive import keep_alive
-import json
 
-# Nom du fichier JSON
-SANCTIONS_FILE = "sanctions.json"
-
-# Charger les sanctions depuis le fichier JSON
-def load_sanctions():
-    if os.path.exists(SANCTIONS_FILE):
-        with open(SANCTIONS_FILE, "r") as f:
-            return json.load(f)
-    return {}
-
-# Sauvegarder les sanctions dans le fichier JSON
-def save_sanctions():
-    with open(SANCTIONS_FILE, "w") as f:
-        json.dump(sanctions, f, indent=4)
-    sanctions = load_sanctions()
 load_dotenv()
 
 
@@ -351,6 +335,56 @@ async def addrole_slash(interaction: discord.Interaction, membre: discord.Member
 @app_commands.describe(membre="Le membre à qui retirer le rôle", role="Le rôle à retirer")
 async def removerole_slash(interaction: discord.Interaction, membre: discord.Member, role: discord.Role):
     await role_logic_slash(interaction, membre, role, action="remove")
+
+#------------------------------------------------------------------------- Sanction lister
+
+@bot.tree.command(name="sanction", description="Afficher les sanctions émises pour un utilisateur.")
+@app_commands.describe(member="L'utilisateur dont vous voulez voir les sanctions.")
+async def sanction(interaction: discord.Interaction, member: discord.Member):
+    """Affiche les sanctions depuis les logs d'audit pour un membre."""
+    guild = interaction.guild
+
+    # Vérification des permissions par rôle
+    user_roles = [role.name for role in interaction.user.roles]
+    if not any(role in AUTHORIZED_ROLES for role in user_roles):
+        await interaction.response.send_message(
+            "Vous n'avez pas la permission d'utiliser cette commande.", 
+            ephemeral=True
+        )
+        return
+
+    logs = await guild.audit_logs(limit=50).flatten()  # Charger les 50 dernières actions
+
+    embed = discord.Embed(
+        title=f"Sanctions pour {member.display_name}",
+        description=f"Historique des sanctions appliquées à {member.mention}.",
+        color=discord.Color.red()
+    )
+    embed.set_thumbnail(url=member.avatar.url if member.avatar else guild.icon.url)
+    embed.set_footer(text=f"Commande exécutée par {interaction.user}", icon_url=interaction.user.avatar.url)
+
+    sanctions_count = 0
+    for log in logs:
+        if log.target.id == member.id and log.action in [
+            discord.AuditLogAction.kick,
+            discord.AuditLogAction.ban,
+            discord.AuditLogAction.unban,
+            discord.AuditLogAction.mute,
+            discord.AuditLogAction.unmute
+        ]:
+            sanctions_count += 1
+            action_name = log.action.name.replace("_", " ").capitalize()
+            reason = log.reason if log.reason else "Aucune raison fournie"
+            embed.add_field(
+                name=f"Action : {action_name}",
+                value=f"Effectuée par : {log.user.mention}\nDate : {log.created_at.strftime('%Y-%m-%d %H:%M:%S')}\nRaison : {reason}",
+                inline=False
+            )
+
+    if sanctions_count == 0:
+        embed.description = "Aucune sanction trouvée pour cet utilisateur."
+
+    await interaction.response.send_message(embed=embed)
 
 
 #------------------------------------------------------------------------- Lancement du bot
