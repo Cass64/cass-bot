@@ -432,9 +432,6 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
     
 #------------------------------------------------------------------------- Course de cheveaux
 
-# Variables globales pour gérer les paris
-pari_en_cours = False
-paris = {}
 
 @bot.command(name="parier")
 async def parier(ctx, cheval: int, mise: int):
@@ -485,9 +482,9 @@ async def horse_race(ctx):
     def construire_piste():
         piste = []
         for i, cheval in enumerate(chevaux):
-            progress = "—" * positions[i] + cheval
-            space = " " * (piste_longueur - positions[i] - 1)
-            piste.append(f"{progress}{space}🏁")
+            progress = "—" * positions[i]  # La progression du cheval
+            space = " " * (piste_longueur - positions[i] - 1)  # Reste de la piste
+            piste.append(f"|{progress}{cheval}{space}| 🏁")  # Ligne d'arrivée fixe
         return "\n".join(piste)
 
     # Envoyer le message initial
@@ -498,7 +495,7 @@ async def horse_race(ctx):
     while not gagnant:
         await asyncio.sleep(0.5)  # Temps plus court pour plus de fluidité
         for i in range(len(chevaux)):
-            avance = random.randint(1, 2)  # Les chevaux avancent aléatoirement (plus lent pour fluidité)
+            avance = random.randint(1, 2)  # Les chevaux avancent aléatoirement
             positions[i] += avance
             if positions[i] >= piste_longueur:
                 gagnant = i + 1  # Le gagnant est trouvé
