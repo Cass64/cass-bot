@@ -432,13 +432,9 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
     
 #------------------------------------------------------------------------- Course de cheveaux
 
-
-pari_en_cours = False
-paris = {}
-
 @bot.command(name="parier")
 async def parier(ctx, cheval: int, mise: int):
-    """Permet aux utilisateurs de parier sur un cheval."""
+    """Permet de parier sur un cheval."""
     global pari_en_cours
 
     chevaux = ["🐎", "🐴", "🦄", "🐐"]
@@ -456,17 +452,19 @@ async def parier(ctx, cheval: int, mise: int):
 
     await ctx.send(f"✅ {user.mention} a parié {mise} points sur le cheval {cheval} {chevaux[cheval - 1]} !")
 
+
 @bot.command(name="course")
 async def horse_race(ctx):
-    """Lance une course de chevaux avec animation !"""
+    """Lance une course de chevaux avec ligne d'arrivée fixe."""
     global pari_en_cours, paris
 
     chevaux = ["🐎", "🐴", "🦄", "🐐"]
-    piste_longueur = 20
+    ligne_arrivee = 20  # Distance fixe pour la ligne d'arrivée
     positions = [0] * len(chevaux)
     pari_en_cours = True
     paris = {}
 
+    # Phase des paris
     embed = discord.Embed(
         title="🎠 Course de chevaux !",
         description="📢 Placez vos paris avec `!!parier <numéro du cheval> <mise>`.\n"
@@ -478,16 +476,16 @@ async def horse_race(ctx):
         embed.add_field(name=f"Cheval {i + 1}", value=cheval, inline=True)
 
     message = await ctx.send(embed=embed)
-    await asyncio.sleep(15)  # Temps pour parier rallongé
+    await asyncio.sleep(15)  # Temps pour parier
 
     pari_en_cours = False
-    await ctx.send("⏳ Les paris sont maintenant fermés ! La course commence 🏁 !")
+    await ctx.send("⏳ Les paris sont fermés ! La course commence 🏁 !")
 
     def construire_piste():
         piste = []
         for i, cheval in enumerate(chevaux):
             progress = "—" * positions[i]
-            space = " " * (piste_longueur - positions[i])
+            space = " " * (ligne_arrivee - positions[i])
             piste.append(f"{progress}{cheval}{space}🏁")
         return "\n".join(piste)
 
@@ -499,11 +497,11 @@ async def horse_race(ctx):
 
     gagnant = None
     while not gagnant:
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.5)  # Animation fluide
         for i in range(len(chevaux)):
             avance = random.randint(1, 2)
             positions[i] += avance
-            if positions[i] >= piste_longueur:
+            if positions[i] >= ligne_arrivee:
                 gagnant = i + 1
                 break
 
