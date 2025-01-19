@@ -522,7 +522,6 @@ async def horse_race(ctx):
     )
     await ctx.send(embed=resultat_embed)
 
-
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
 bot.run(token)
