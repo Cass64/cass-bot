@@ -433,12 +433,15 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
 #------------------------------------------------------------------------- Course de cheveaux
 
 
+pari_en_cours = False
+paris = {}
+
 @bot.command(name="parier")
 async def parier(ctx, cheval: int, mise: int):
     """Permet aux utilisateurs de parier sur un cheval."""
     global pari_en_cours
 
-    chevaux = ["🐎", "🐴", "🦄", "🐐"]  # Les chevaux disponibles
+    chevaux = ["🐎", "🐴", "🦄", "🐐"]
 
     if not pari_en_cours:
         await ctx.send("❌ Les paris ne sont pas ouverts pour le moment.")
@@ -449,9 +452,8 @@ async def parier(ctx, cheval: int, mise: int):
         return
 
     user = ctx.author
-
-    # Enregistrer le pari
     paris[user.id] = {"cheval": cheval, "mise": mise}
+
     await ctx.send(f"✅ {user.mention} a parié {mise} points sur le cheval {cheval} {chevaux[cheval - 1]} !")
 
 @bot.command(name="course")
@@ -459,52 +461,55 @@ async def horse_race(ctx):
     """Lance une course de chevaux avec animation !"""
     global pari_en_cours, paris
 
-    chevaux = ["🐎", "🐴", "🦄", "🐐"]  # Les chevaux
-    piste_longueur = 20  # Longueur de la piste
-    positions = [0] * len(chevaux)  # Positions de départ
-    pari_en_cours = True  # Les paris sont ouverts
-    paris = {}  # Réinitialiser les paris
+    chevaux = ["🐎", "🐴", "🦄", "🐐"]
+    piste_longueur = 20
+    positions = [0] * len(chevaux)
+    pari_en_cours = True
+    paris = {}
 
-    # Annonce de début et ouverture des paris
-    await ctx.send(
-        "🎉 **La course de chevaux commence !** 🎉\n\n"
-        "📢 Placez vos paris avec `!!parier <numéro du cheval> <mise>`.\n"
-        "Exemple : `!!parier 2 50`\n\n"
-        "Les chevaux participants :\n"
-        + "\n".join([f"{i + 1}. {chevaux[i]}" for i in range(len(chevaux))])
+    embed = discord.Embed(
+        title="🎠 Course de chevaux !",
+        description="📢 Placez vos paris avec `!!parier <numéro du cheval> <mise>`.\n"
+                    "Exemple : `!!parier 2 50`\n\n"
+                    "Les chevaux participants :",
+        color=discord.Color.gold()
     )
-    await asyncio.sleep(20)  # Temps pour les paris rallongé
+    for i, cheval in enumerate(chevaux):
+        embed.add_field(name=f"Cheval {i + 1}", value=cheval, inline=True)
 
-    pari_en_cours = False  # Fermeture des paris
-    await ctx.send("⏳ Les paris sont fermés ! La course commence maintenant ! 🏁")
+    message = await ctx.send(embed=embed)
+    await asyncio.sleep(15)  # Temps pour parier rallongé
 
-    # Construire une représentation visuelle initiale
+    pari_en_cours = False
+    await ctx.send("⏳ Les paris sont maintenant fermés ! La course commence 🏁 !")
+
     def construire_piste():
         piste = []
         for i, cheval in enumerate(chevaux):
-            progress = "—" * positions[i]  # La progression du cheval
-            space = " " * (piste_longueur - positions[i] - 1)  # Reste de la piste
-            piste.append(f"|{progress}{cheval}{space}| 🏁")  # Ligne d'arrivée fixe
+            progress = "—" * positions[i]
+            space = " " * (piste_longueur - positions[i])
+            piste.append(f"{progress}{cheval}{space}🏁")
         return "\n".join(piste)
 
-    # Envoyer le message initial
-    message = await ctx.send("🚩 **La course commence !** 🚩\n" + construire_piste())
+    course_embed = discord.Embed(
+        title="🚩 La course commence !",
+        color=discord.Color.blue()
+    )
+    message_course = await ctx.send(embed=course_embed)
 
-    # Animation de la course
     gagnant = None
     while not gagnant:
-        await asyncio.sleep(0.5)  # Temps plus court pour plus de fluidité
+        await asyncio.sleep(0.5)
         for i in range(len(chevaux)):
-            avance = random.randint(1, 2)  # Les chevaux avancent aléatoirement
+            avance = random.randint(1, 2)
             positions[i] += avance
             if positions[i] >= piste_longueur:
-                gagnant = i + 1  # Le gagnant est trouvé
+                gagnant = i + 1
                 break
 
-        # Mettre à jour le message avec la nouvelle position
-        await message.edit(content="🚩 **La course continue !** 🚩\n" + construire_piste())
+        course_embed.description = construire_piste()
+        await message_course.edit(embed=course_embed)
 
-    # Annoncer le gagnant
     gagnants_paris = [
         user_id
         for user_id, pari in paris.items()
@@ -512,17 +517,12 @@ async def horse_race(ctx):
     ]
     gagnants_mentions = ", ".join([f"<@{user_id}>" for user_id in gagnants_paris])
 
-    resultat_message = (
-        f"🏆 **Le cheval {gagnant} {chevaux[gagnant - 1]} a gagné la course !** 🥇\n"
+    resultat_embed = discord.Embed(
+        title=f"🏆 Le cheval {gagnant} {chevaux[gagnant - 1]} a gagné !",
+        description=f"🎉 Félicitations aux gagnants : {gagnants_mentions}" if gagnants_mentions else "😢 Aucun pari gagnant cette fois-ci.",
+        color=discord.Color.green()
     )
-    if gagnants_mentions:
-        resultat_message += (
-            f"🎉 Félicitations aux gagnants : {gagnants_mentions} !\n"
-        )
-    else:
-        resultat_message += "😢 Aucun pari gagnant cette fois-ci."
-
-    await ctx.send(resultat_message)
+    await ctx.send(embed=resultat_embed)
 
 
 #------------------------------------------------------------------------- Lancement du bot
