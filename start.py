@@ -459,7 +459,7 @@ async def horse_race(ctx):
     global pari_en_cours, paris
 
     chevaux = ["🐎", "🐴", "🦄", "🐐"]
-    ligne_arrivee = 20  # Distance fixe pour la ligne d'arrivée
+    ligne_arrivee = 50  # Distance fixe pour la ligne d'arrivée
     positions = [0] * len(chevaux)
     pari_en_cours = True
     paris = {}
@@ -499,7 +499,7 @@ async def horse_race(ctx):
     while not gagnant:
         await asyncio.sleep(0.5)  # Animation fluide
         for i in range(len(chevaux)):
-            avance = random.randint(1, 2)
+            avance = random.randint(1, 2)  # Les chevaux avancent de 1 ou 2
             positions[i] += avance
             if positions[i] >= ligne_arrivee:
                 gagnant = i + 1
