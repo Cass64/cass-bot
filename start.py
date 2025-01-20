@@ -431,7 +431,6 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
     await interaction.followup.send(embed=embed)
     
 #------------------------------------------------------------------------- Course de cheveaux
-
 @bot.command(name="parier")
 async def parier(ctx, cheval: int, mise: int):
     """Permet de parier sur un cheval."""
@@ -455,11 +454,11 @@ async def parier(ctx, cheval: int, mise: int):
 
 @bot.command(name="course")
 async def horse_race(ctx):
-    """Lance une course de chevaux avec une grande ligne d'arrivée fixe."""
+    """Lance une course de chevaux avec une distance fixe et un trajet prédéterminé."""
     global pari_en_cours, paris
 
     chevaux = ["🐎", "🐴", "🦄", "🐐"]
-    ligne_arrivee = 20  # Nombre de cases avant la ligne d'arrivée
+    distance_totale = 20  # Distance fixe (nombre de cases à parcourir)
     positions = [0] * len(chevaux)
     pari_en_cours = True
     paris = {}
@@ -485,7 +484,7 @@ async def horse_race(ctx):
         piste = []
         for i, cheval in enumerate(chevaux):
             progress = "—" * positions[i]
-            espace_restant = " " * (ligne_arrivee - positions[i])
+            espace_restant = " " * (distance_totale - positions[i])
             piste.append(f"{cheval}{progress}{espace_restant}")
         return "\n".join(piste)
 
@@ -501,9 +500,9 @@ async def horse_race(ctx):
     while not gagnant:
         await asyncio.sleep(0.5)  # Animation fluide
         for i in range(len(chevaux)):
-            avance = random.randint(1, 2)  # Les chevaux avancent de 1 ou 2
+            avance = random.randint(1, 2)  # Chaque cheval avance de 1 ou 2 cases
             positions[i] += avance
-            if positions[i] >= ligne_arrivee:
+            if positions[i] >= distance_totale:
                 gagnant = i + 1
                 break
 
@@ -523,7 +522,6 @@ async def horse_race(ctx):
         color=discord.Color.green()
     )
     await ctx.send(embed=resultat_embed)
-
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
 bot.run(token)
