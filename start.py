@@ -444,32 +444,32 @@ async def parier(ctx, cheval: int, mise: int):
         return
 
     if cheval < 1 or cheval > len(chevaux):
-        await ctx.send(f"❌ Cheval invalide ! Choisissez un numéro entre 1 et {len(chevaux)}.")
+        await ctx.send(f"❌ Cheval invalide ! Choisissez un numéro entre 1 et {len(chevaux)}.")
         return
 
     user = ctx.author
     paris[user.id] = {"cheval": cheval, "mise": mise}
 
-    await ctx.send(f"✅ {user.mention} a parié {mise} points sur le cheval {cheval} {chevaux[cheval - 1]} !")
+    await ctx.send(f"✅ {user.mention} a parié {mise} points sur le cheval {cheval} {chevaux[cheval - 1]} !")
 
 
 @bot.command(name="course")
 async def horse_race(ctx):
-    """Lance une course de chevaux avec ligne d'arrivée fixe."""
+    """Lance une course de chevaux avec une grande ligne d'arrivée fixe."""
     global pari_en_cours, paris
 
     chevaux = ["🐎", "🐴", "🦄", "🐐"]
-    ligne_arrivee = 50  # Distance fixe pour la ligne d'arrivée
+    ligne_arrivee = 30  # Nombre de cases avant la ligne d'arrivée
     positions = [0] * len(chevaux)
     pari_en_cours = True
     paris = {}
 
     # Phase des paris
     embed = discord.Embed(
-        title="🎠 Course de chevaux !",
+        title="🎠 Course de chevaux !",
         description="📢 Placez vos paris avec `!!parier <numéro du cheval> <mise>`.\n"
                     "Exemple : `!!parier 2 50`\n\n"
-                    "Les chevaux participants :",
+                    "Les chevaux participants :",
         color=discord.Color.gold()
     )
     for i, cheval in enumerate(chevaux):
@@ -479,19 +479,19 @@ async def horse_race(ctx):
     await asyncio.sleep(15)  # Temps pour parier
 
     pari_en_cours = False
-    await ctx.send("⏳ Les paris sont fermés ! La course commence 🏁 !")
+    await ctx.send("⏳ Les paris sont fermés ! La course commence 🏁 !")
 
     def construire_piste():
         piste = []
         for i, cheval in enumerate(chevaux):
             progress = "—" * positions[i]
-            space = " " * (ligne_arrivee - positions[i])
-            piste.append(f"{progress}{cheval}{space}🏁")  # La ligne d'arrivée est fixe
+            espace_restant = " " * (ligne_arrivee - positions[i])
+            piste.append(f"{cheval}{progress}{espace_restant}| 🏁")  # Ligne d'arrivée fixe
         return "\n".join(piste)
 
     # Crée l'embed de la course
     course_embed = discord.Embed(
-        title="🚩 La course commence !",
+        title="🚩 La course commence !",
         color=discord.Color.blue()
     )
     course_embed.description = construire_piste()
@@ -518,7 +518,7 @@ async def horse_race(ctx):
     gagnants_mentions = ", ".join([f"<@{user_id}>" for user_id in gagnants_paris])
 
     resultat_embed = discord.Embed(
-        title=f"🏆 Le cheval {gagnant} {chevaux[gagnant - 1]} a gagné !",
+        title=f"🏆 Le cheval {gagnant} {chevaux[gagnant - 1]} a gagné !",
         description=f"🎉 Félicitations aux gagnants : {gagnants_mentions}" if gagnants_mentions else "😢 Aucun pari gagnant cette fois-ci.",
         color=discord.Color.green()
     )
