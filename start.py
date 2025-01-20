@@ -498,7 +498,8 @@ async def horse_race(ctx):
 
     gagnant = None
     while not gagnant:
-        await asyncio.sleep(0.5)  # Animation fluide
+        # Utiliser une liste d'animations pour chaque cheval
+        await asyncio.sleep(0.1)  # Animation fluide
         for i in range(len(chevaux)):
             avance = random.randint(1, 2)  # Chaque cheval avance de 1 ou 2 cases
             positions[i] += avance
