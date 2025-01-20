@@ -486,13 +486,15 @@ async def horse_race(ctx):
         for i, cheval in enumerate(chevaux):
             progress = "—" * positions[i]
             space = " " * (ligne_arrivee - positions[i])
-            piste.append(f"{progress}{cheval}{space}🏁")
+            piste.append(f"{progress}{cheval}{space}🏁")  # La ligne d'arrivée est fixe
         return "\n".join(piste)
 
+    # Crée l'embed de la course
     course_embed = discord.Embed(
         title="🚩 La course commence !",
         color=discord.Color.blue()
     )
+    course_embed.description = construire_piste()
     message_course = await ctx.send(embed=course_embed)
 
     gagnant = None
@@ -505,7 +507,7 @@ async def horse_race(ctx):
                 gagnant = i + 1
                 break
 
-        course_embed.description = construire_piste()
+        course_embed.description = construire_piste()  # Actualisation de la position des chevaux
         await message_course.edit(embed=course_embed)
 
     gagnants_paris = [
