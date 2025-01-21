@@ -432,6 +432,17 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
     
 #------------------------------------------------------------------------- Course de cheveaux
 
+import asyncio
+import random
+from discord.ext import commands
+import discord
+
+intents = discord.Intents.default()
+bot = commands.Bot(command_prefix="!!", intents=intents)
+
+pari_en_cours = False
+paris = {}
+
 @bot.command(name="parier")
 async def parier(ctx, cheval: int, mise: int):
     """Permet de parier sur un cheval."""
@@ -455,7 +466,7 @@ async def parier(ctx, cheval: int, mise: int):
 
 @bot.command(name="course")
 async def horse_race(ctx):
-    """Lance une course de chevaux avec une distance fixe et un trajet prédéterminé."""
+    """Lance une course de chevaux où les chevaux avancent vers une ligne d'arrivée fixe."""
     global pari_en_cours, paris
 
     chevaux = ["🐎", "🐴", "🦄", "🐐"]
@@ -484,9 +495,7 @@ async def horse_race(ctx):
     def construire_piste():
         piste = []
         for i, cheval in enumerate(chevaux):
-            progress = "—" * positions[i]
-            espace_restant = " " * (distance_totale - positions[i])
-            piste.append(f"{cheval}{progress}{espace_restant}")
+            piste.append(f"{' ' * positions[i]}{cheval}{' ' * (distance_totale - positions[i])}")
         return "\n".join(piste)
 
     # Crée l'embed de la course
@@ -523,6 +532,9 @@ async def horse_race(ctx):
         color=discord.Color.green()
     )
     await ctx.send(embed=resultat_embed)
+
+bot.run("VOTRE_TOKEN")
+
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
 bot.run(token)
