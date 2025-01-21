@@ -431,6 +431,7 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
     await interaction.followup.send(embed=embed)
     
 #------------------------------------------------------------------------- Course de cheveaux
+
 @bot.command(name="parier")
 async def parier(ctx, cheval: int, mise: int):
     """Permet de parier sur un cheval."""
@@ -498,8 +499,7 @@ async def horse_race(ctx):
 
     gagnant = None
     while not gagnant:
-        # Utiliser une liste d'animations pour chaque cheval
-        await asyncio.sleep(0.1)  # Animation fluide
+        await asyncio.sleep(0.5)  # Animation fluide
         for i in range(len(chevaux)):
             avance = random.randint(1, 2)  # Chaque cheval avance de 1 ou 2 cases
             positions[i] += avance
