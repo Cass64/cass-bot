@@ -432,17 +432,6 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
     
 #------------------------------------------------------------------------- Course de cheveaux
 
-import asyncio
-import random
-from discord.ext import commands
-import discord
-
-intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="!!", intents=intents)
-
-pari_en_cours = False
-paris = {}
-
 @bot.command(name="parier")
 async def parier(ctx, cheval: int, mise: int):
     """Permet de parier sur un cheval."""
@@ -532,8 +521,6 @@ async def horse_race(ctx):
         color=discord.Color.green()
     )
     await ctx.send(embed=resultat_embed)
-
-bot.run("VOTRE_TOKEN")
 
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
