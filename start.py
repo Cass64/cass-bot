@@ -432,6 +432,9 @@ async def sanction(interaction: discord.Interaction, member: discord.Member):
     
 #------------------------------------------------------------------------- Course de cheveaux
 
+pari_en_cours = False
+paris = {}
+
 @bot.command(name="parier")
 async def parier(ctx, cheval: int, mise: int):
     """Permet de parier sur un cheval."""
@@ -451,7 +454,6 @@ async def parier(ctx, cheval: int, mise: int):
     paris[user.id] = {"cheval": cheval, "mise": mise}
 
     await ctx.send(f"✅ {user.mention} a parié {mise} points sur le cheval {cheval} {chevaux[cheval - 1]} !")
-
 
 @bot.command(name="course")
 async def horse_race(ctx):
@@ -484,7 +486,8 @@ async def horse_race(ctx):
     def construire_piste():
         piste = []
         for i, cheval in enumerate(chevaux):
-            piste.append(f"{' ' * positions[i]}{cheval}{' ' * (distance_totale - positions[i])}")
+            ligne = f"|{' ' * positions[i]}{cheval}{' ' * (distance_totale - positions[i])}|"
+            piste.append(ligne)
         return "\n".join(piste)
 
     # Crée l'embed de la course
@@ -492,20 +495,21 @@ async def horse_race(ctx):
         title="🚩 La course commence !",
         color=discord.Color.blue()
     )
-    course_embed.description = construire_piste() + "\n" + ("=" * 30) + " 🏁 LIGNE D'ARRIVÉE 🏁"
+    course_embed.description = construire_piste() + "\n\n🏁 **LIGNE D'ARRIVÉE** 🏁"
     message_course = await ctx.send(embed=course_embed)
 
     gagnant = None
     while not gagnant:
-        await asyncio.sleep(0.5)  # Animation fluide
+        await asyncio.sleep(1)  # Animation fluide
         for i in range(len(chevaux)):
             avance = random.randint(1, 2)  # Chaque cheval avance de 1 ou 2 cases
             positions[i] += avance
             if positions[i] >= distance_totale:
                 gagnant = i + 1
+                positions[i] = distance_totale  # Empêche de dépasser la ligne d'arrivée
                 break
 
-        course_embed.description = construire_piste() + "\n" + ("=" * 30) + " 🏁 LIGNE D'ARRIVÉE 🏁"
+        course_embed.description = construire_piste() + "\n\n🏁 **LIGNE D'ARRIVÉE** 🏁"
         await message_course.edit(embed=course_embed)
 
     gagnants_paris = [
@@ -521,7 +525,6 @@ async def horse_race(ctx):
         color=discord.Color.green()
     )
     await ctx.send(embed=resultat_embed)
-
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
 bot.run(token)
