@@ -4,7 +4,6 @@ import os
 
 app = Flask(__name__)
 
-# ✅ Route d'accueil (toujours renvoyer du JSON)
 @app.route('/')
 def home():
     return jsonify({'message': 'API Discord-Bot en ligne ! 🚀'})
@@ -13,10 +12,13 @@ def home():
 @app.route('/start-bot', methods=['POST'])
 def start_bot():
     try:
+        print("Démarrage du bot...")  # Log pour vérifier que la route est atteinte
         subprocess.Popen(['python', 'start.py'])
-        return jsonify({'status': 'Bot démarré avec succès !'})
+        print("Bot démarré avec succès")  # Log pour confirmer que le bot a démarré
+        return jsonify({'status': 'Bot démarré avec succès !'}), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Erreur lors du démarrage du bot : {str(e)}")  # Log d'erreur
+        return jsonify({'error': 'Erreur serveur lors du démarrage du bot'}), 500
 
 # 💬 Envoyer un message à un canal Discord
 @app.route('/send-message', methods=['POST'])
@@ -29,11 +31,14 @@ def send_message():
         return jsonify({'error': 'Message et channel_id requis'}), 400
 
     try:
+        print(f"Envoi du message : {message} au canal {channel_id}")  # Log pour vérifier la requête
         subprocess.run(['python', 'client.py', channel_id, message])
-        return jsonify({'status': 'Message envoyé avec succès !'})
+        print("Message envoyé avec succès")  # Log de succès
+        return jsonify({'status': 'Message envoyé avec succès !'}), 200
     except Exception as e:
+        print(f"Erreur lors de l'envoi du message : {str(e)}")  # Log d'erreur
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 3000))  # Port défini par Render
+    port = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=port)
