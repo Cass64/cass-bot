@@ -21,7 +21,7 @@ def start_bot():
         return jsonify({'error': 'Erreur serveur lors du démarrage du bot'}), 500
 
 # 💬 Envoyer un message à un canal Discord
-@app.route('/send-message', methods=['POST'])
+@app.route('/send-message', methods=["GET","POST"])
 def send_message():
     data = request.json
     message = data.get('message')
