@@ -7,6 +7,9 @@ import random
 from keep_alive import keep_alive
 import json
 import asyncio
+from flask import Flask, request
+
+app = Flask(__name__)
 
 SANCTION_FILE = "sanctions.json"
 
