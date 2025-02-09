@@ -8,20 +8,22 @@ app = Flask(__name__)
 def home():
     return jsonify({'message': 'API Discord-Bot en ligne ! 🚀'})
 
-# 🚀 Démarrer le bot
 @app.route('/start-bot', methods=["GET", "POST"])
 def start_bot():
     try:
         print("Démarrage du bot...")
-        subprocess.Popen(['python', 'start.py'])
+        # Démarrer le bot en arrière-plan
+        process = subprocess.Popen(['python', 'start.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()  # Capturer la sortie et les erreurs
+        print("Sortie du bot :", stdout.decode())
+        print("Erreurs du bot :", stderr.decode())
         print("Bot démarré avec succès")
         return jsonify({'status': 'Bot démarré avec succès !'}), 200
     except Exception as e:
         print(f"Erreur lors du démarrage du bot : {str(e)}")
         return jsonify({'error': 'Erreur serveur lors du démarrage du bot', 'details': str(e)}), 500
 
-# 💬 Envoyer un message à un canal Discord
-@app.route('/send-message', methods=["GET","POST"])
+@app.route('/send-message', methods=["GET", "POST"])
 def send_message():
     data = request.json
     message = data.get('message')
@@ -31,12 +33,15 @@ def send_message():
         return jsonify({'error': 'Message et channel_id requis'}), 400
 
     try:
-        print(f"Envoi du message : {message} au canal {channel_id}")  # Log pour vérifier la requête
-        subprocess.run(['python', 'client.py', channel_id, message])
-        print("Message envoyé avec succès")  # Log de succès
+        print(f"Envoi du message : {message} au canal {channel_id}")
+        # Exécuter le script client.py pour envoyer le message
+        process = subprocess.run(['python', 'client.py', channel_id, message], capture_output=True, text=True)
+        print("Sortie du script :", process.stdout)
+        print("Erreurs du script :", process.stderr)
+        print("Message envoyé avec succès")
         return jsonify({'status': 'Message envoyé avec succès !'}), 200
     except Exception as e:
-        print(f"Erreur lors de l'envoi du message : {str(e)}")  # Log d'erreur
+        print(f"Erreur lors de l'envoi du message : {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
