@@ -9,16 +9,16 @@ def home():
     return jsonify({'message': 'API Discord-Bot en ligne ! 🚀'})
 
 # 🚀 Démarrer le bot
-@app.route('/start-bot', methods=["GET","POST"])
+@app.route('/start-bot', methods=["GET", "POST"])
 def start_bot():
     try:
-        print("Démarrage du bot...")  # Log pour vérifier que la route est atteinte
+        print("Démarrage du bot...")
         subprocess.Popen(['python', 'start.py'])
-        print("Bot démarré avec succès")  # Log pour confirmer que le bot a démarré
+        print("Bot démarré avec succès")
         return jsonify({'status': 'Bot démarré avec succès !'}), 200
     except Exception as e:
-        print(f"Erreur lors du démarrage du bot : {str(e)}")  # Log d'erreur
-        return jsonify({'error': 'Erreur serveur lors du démarrage du bot'}), 500
+        print(f"Erreur lors du démarrage du bot : {str(e)}")
+        return jsonify({'error': 'Erreur serveur lors du démarrage du bot', 'details': str(e)}), 500
 
 # 💬 Envoyer un message à un canal Discord
 @app.route('/send-message', methods=["GET","POST"])
