@@ -35,6 +35,10 @@ token = os.getenv('TOKEN_BOT_DISCORD')
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!!", intents=intents)
 
+@bot.event
+async def on_ready():
+    print(f"Bot connecté en tant que {bot.user}")
+
 # Correspondance entre le résultat et les emojis de dés
 DICE_EMOJIS = {
     1: "🎲1️⃣",
