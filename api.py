@@ -9,7 +9,7 @@ def home():
     return jsonify({'message': 'API Discord-Bot en ligne ! 🚀'})
 
 # 🚀 Démarrer le bot
-@app.route('/start-bot', methods=['POST'])
+@app.route('/start-bot', methods=["GET","POST"])
 def start_bot():
     try:
         print("Démarrage du bot...")  # Log pour vérifier que la route est atteinte
