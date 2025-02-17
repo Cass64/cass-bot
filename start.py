@@ -259,7 +259,7 @@ async def pfc_logic(target, choix: str, is_slash: bool):
 from discord.ext import commands
 
 # Liste des rôles autorisés pour exécuter les commandes de modération
-AUTHORIZED_ROLES = ["・A-Keys", "Kage", "'⭐️", "・Garde Royale"]
+AUTHORIZED_ROLES = ["・A-Keys", "Kage", "'⭐️", "・Garde Royale", "Azkaban"]
 
 def check_permissions(ctx):
     """Vérifie si l'utilisateur a un rôle autorisé pour exécuter la commande."""
