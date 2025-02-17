@@ -522,6 +522,90 @@ async def horse_race(ctx):
         color=discord.Color.green()
     )
     await ctx.send(embed=resultat_embed)
+
+#------------------------------------------------------------------------- Ban/unban
+
+### Commande BAN (préfixe et slash)
+@bot.command(name="ban")
+async def ban(ctx, member: discord.Member, *, reason="Aucune raison spécifiée"):
+    """Bannit un utilisateur avec !!ban"""
+    
+    if not has_authorized_role(ctx.author):
+        await ctx.send("❌ Vous n'avez pas la permission d'utiliser cette commande.", delete_after=5)
+        return
+
+    try:
+        await member.ban(reason=reason)
+        await ctx.send(f"✅ {member.mention} a été banni. Raison : {reason}")
+    except discord.Forbidden:
+        await ctx.send("❌ Je n'ai pas la permission de bannir cet utilisateur.")
+    except Exception as e:
+        await ctx.send(f"❌ Une erreur est survenue : {e}")
+
+
+@bot.tree.command(name="ban", description="Bannir un utilisateur du serveur.")
+@app_commands.describe(member="L'utilisateur à bannir.", reason="Raison du bannissement (optionnelle).")
+async def slash_ban(interaction: discord.Interaction, member: discord.Member, reason: str = "Aucune raison spécifiée"):
+    """Bannit un utilisateur avec /ban"""
+    
+    if not has_authorized_role(interaction.user):
+        await interaction.response.send_message("❌ Vous n'avez pas la permission d'utiliser cette commande.", ephemeral=True)
+        return
+
+    await interaction.response.defer()
+
+    try:
+        await member.ban(reason=reason)
+        await interaction.followup.send(f"✅ {member.mention} a été banni. Raison : {reason}")
+    except discord.Forbidden:
+        await interaction.followup.send("❌ Je n'ai pas la permission de bannir cet utilisateur.", ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(f"❌ Une erreur est survenue : {e}", ephemeral=True)
+
+
+### Commande UNBAN (préfixe et slash)
+@bot.command(name="unban")
+async def unban(ctx, user_id: int):
+    """Débannit un utilisateur avec !!unban"""
+    
+    if not has_authorized_role(ctx.author):
+        await ctx.send("❌ Vous n'avez pas la permission d'utiliser cette commande.", delete_after=5)
+        return
+
+    try:
+        user = await bot.fetch_user(user_id)
+        await ctx.guild.unban(user)
+        await ctx.send(f"✅ {user.mention} a été débanni.")
+    except discord.NotFound:
+        await ctx.send("❌ L'utilisateur avec cet ID n'est pas banni ou n'existe pas.")
+    except discord.Forbidden:
+        await ctx.send("❌ Je n'ai pas la permission de débannir cet utilisateur.")
+    except Exception as e:
+        await ctx.send(f"❌ Une erreur est survenue : {e}")
+
+
+@bot.tree.command(name="unban", description="Débannir un utilisateur du serveur.")
+@app_commands.describe(user_id="L'ID de l'utilisateur à débannir.")
+async def slash_unban(interaction: discord.Interaction, user_id: str):
+    """Débannit un utilisateur avec /unban"""
+    
+    if not has_authorized_role(interaction.user):
+        await interaction.response.send_message("❌ Vous n'avez pas la permission d'utiliser cette commande.", ephemeral=True)
+        return
+
+    await interaction.response.defer()
+
+    try:
+        user = await bot.fetch_user(user_id)
+        await interaction.guild.unban(user)
+        await interaction.followup.send(f"✅ {user.mention} a été débanni.")
+    except discord.NotFound:
+        await interaction.followup.send("❌ L'utilisateur avec cet ID n'est pas banni ou n'existe pas.", ephemeral=True)
+    except discord.Forbidden:
+        await interaction.followup.send("❌ Je n'ai pas la permission de débannir cet utilisateur.", ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(f"❌ Une erreur est survenue : {e}", ephemeral=True)
+
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
 bot.run(token)
