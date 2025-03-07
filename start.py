@@ -7,6 +7,8 @@ import random
 from keep_alive import keep_alive
 import json
 import asyncio
+import yt_dlp
+import asyncio
 
 SANCTION_FILE = "sanctions.json"
 
@@ -605,6 +607,248 @@ async def slash_unban(interaction: discord.Interaction, user_id: str):
         await interaction.followup.send("❌ Je n'ai pas la permission de débannir cet utilisateur.", ephemeral=True)
     except Exception as e:
         await interaction.followup.send(f"❌ Une erreur est survenue : {e}", ephemeral=True)
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------- MUSIQUE
+
+# Options pour yt-dlp (pour extraire l'audio)
+ytdl_format_options = {
+    'format': 'bestaudio/best',
+    'quiet': True,
+    'noplaylist': True,
+}
+ffmpeg_options = {
+    'options': '-vn'
+}
+ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
+
+# Fonction pour extraire les infos d'une musique
+def extract_info(query, download=False):
+    try:
+        info = ytdl.extract_info(query, download=download)
+    except Exception as e:
+        print(f"Erreur d'extraction: {e}")
+        return None
+    if 'entries' in info:
+        # Si c'est une playlist, on prend le premier résultat
+        info = info['entries'][0]
+    return info
+
+# Classe pour représenter une musique
+class Song:
+    def __init__(self, info):
+        self.source = info['url']              # URL pour FFmpeg
+        self.title = info.get('title')
+        self.webpage_url = info.get('webpage_url')
+        self.duration = info.get('duration')    # en secondes
+        self.uploader = info.get('uploader')
+        self.thumbnail = info.get('thumbnail')
+
+    def formatted_duration(self):
+        mins, secs = divmod(self.duration, 60)
+        return f"{mins}:{secs:02}"
+
+# Classe pour gérer la lecture et la file d'attente par serveur (guild)
+class MusicPlayer:
+    def __init__(self, bot, interaction: discord.Interaction):
+        self.bot = bot
+        self.queue = []           # file d'attente
+        self.current = None       # musique en cours
+        self.voice_client = None  # connexion vocale
+        self.text_channel = interaction.channel
+        self.guild = interaction.guild
+        self.lock = asyncio.Lock()
+
+    # Se connecter à un salon vocal
+    async def connect(self, voice_channel: discord.VoiceChannel):
+        if self.voice_client is None or not self.voice_client.is_connected():
+            self.voice_client = await voice_channel.connect()
+        return self.voice_client
+
+    # Lancer la lecture d'une musique
+    async def play_song(self, song: Song):
+        self.current = song
+        if not self.voice_client:
+            return
+        source = discord.FFmpegPCMAudio(song.source, **ffmpeg_options)
+        def after_playing(error):
+            if error:
+                print(f"Erreur pendant la lecture: {error}")
+            # Lancer la lecture de la musique suivante
+            asyncio.run_coroutine_threadsafe(self.play_next(), self.bot.loop)
+        self.voice_client.play(source, after=after_playing)
+        await self.send_now_playing(song)
+
+    # Passer à la musique suivante
+    async def play_next(self):
+        async with self.lock:
+            if self.queue:
+                next_song = self.queue.pop(0)
+                await self.play_song(next_song)
+            else:
+                self.current = None
+                if self.voice_client:
+                    await self.voice_client.disconnect()
+                    self.voice_client = None
+
+    # Ajouter une musique à la file (limite à 10 titres)
+    async def add_to_queue(self, song: Song):
+        if len(self.queue) >= 10:
+            return False
+        self.queue.append(song)
+        return True
+
+    # Envoyer un embed "Lecture en cours" avec les boutons
+    async def send_now_playing(self, song: Song):
+        embed = discord.Embed(
+            title="Lecture en cours",
+            description=f"[{song.title}]({song.webpage_url})",
+            color=discord.Color.blue()
+        )
+        embed.add_field(name="Auteur", value=song.uploader or "Inconnu", inline=True)
+        embed.add_field(name="Durée", value=song.formatted_duration(), inline=True)
+        if song.thumbnail:
+            embed.set_thumbnail(url=song.thumbnail)
+        view = NowPlayingView(self)
+        await self.text_channel.send(embed=embed, view=view)
+
+# Dictionnaire pour stocker un MusicPlayer par guild
+music_players = {}
+
+# Vue avec les boutons pour le "Lecture en cours"
+class NowPlayingView(discord.ui.View):
+    def __init__(self, player: MusicPlayer):
+        super().__init__(timeout=None)
+        self.player = player
+
+    @discord.ui.button(label="Pause / Reprendre", style=discord.ButtonStyle.secondary, custom_id="pause_song")
+    async def pause_resume(self, interaction: discord.Interaction, button: discord.ui.Button):
+        vc = self.player.voice_client
+        if vc is None or not vc.is_playing():
+            await interaction.response.send_message("Aucune musique en cours.", ephemeral=True)
+            return
+        if vc.is_paused():
+            vc.resume()
+            await interaction.response.send_message("La musique a été reprise !", ephemeral=True)
+        else:
+            vc.pause()
+            await interaction.response.send_message("La musique a été mise en pause !", ephemeral=True)
+
+    @discord.ui.button(label="Passer", style=discord.ButtonStyle.primary, custom_id="skip_song")
+    async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
+        vc = self.player.voice_client
+        if vc is None or not vc.is_playing():
+            await interaction.response.send_message("Aucune musique n'est en cours.", ephemeral=True)
+            return
+        vc.stop()  # Cela déclenchera le callback et lancera la musique suivante
+        await interaction.response.send_message("Musique passée !", ephemeral=True)
+
+    @discord.ui.button(label="Stop / Quitter", style=discord.ButtonStyle.danger, custom_id="stop_song")
+    async def stop(self, interaction: discord.Interaction, button: discord.ui.Button):
+        vc = self.player.voice_client
+        if vc is None:
+            await interaction.response.send_message("Aucune musique n'est en cours.", ephemeral=True)
+            return
+        self.player.queue.clear()
+        vc.stop()
+        await vc.disconnect()
+        self.player.voice_client = None
+        await interaction.response.send_message("La musique a été arrêtée et le bot a quitté le salon vocal !", ephemeral=True)
+
+# Vue avec boutons pour la commande /queue
+class QueueView(discord.ui.View):
+    def __init__(self, player: MusicPlayer):
+        super().__init__(timeout=None)
+        self.player = player
+
+    @discord.ui.button(label="Vider la file", style=discord.ButtonStyle.danger, custom_id="clear_queue")
+    async def clear_queue(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.player.queue.clear()
+        await interaction.response.send_message("La file d'attente a été vidée !", ephemeral=True)
+
+    @discord.ui.button(label="Ajouter une musique", style=discord.ButtonStyle.primary, custom_id="add_queue")
+    async def add_queue(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Pour ajouter une musique, utilisez la commande `/play <url|nom>` !", ephemeral=True)
+
+# Création du bot
+intents = discord.Intents.default()
+intents.message_content = True
+intents.voice_states = True
+bot = commands.Bot(command_prefix="/", intents=intents)
+
+# Fonction d'autocomplétion pour la commande /play (exemple basique)
+async def play_autocomplete(interaction: discord.Interaction, current: str):
+    return [
+        app_commands.Choice(name=f"{current} - Artiste1", value=f"{current} - Artiste1"),
+        app_commands.Choice(name=f"{current} - Artiste2", value=f"{current} - Artiste2"),
+        app_commands.Choice(name=f"{current} - Artiste3", value=f"{current} - Artiste3"),
+    ]
+
+@bot.event
+async def on_ready():
+    print(f'Connecté en tant que {bot.user}!')
+    try:
+        synced = await bot.tree.sync()
+        print(f"{len(synced)} commandes synchronisées.")
+    except Exception as e:
+        print(e)
+
+# Commande slash /play
+@bot.tree.command(name="play", description="Joue une musique ou l'ajoute à la file d'attente.")
+@app_commands.describe(query="URL ou nom de la musique")
+@app_commands.autocomplete(query=play_autocomplete)
+async def play(interaction: discord.Interaction, query: str):
+    # Vérification que l'utilisateur est dans un salon vocal
+    if interaction.user.voice is None or interaction.user.voice.channel is None:
+        await interaction.response.send_message("Vous devez être dans un salon vocal pour utiliser cette commande !", ephemeral=True)
+        return
+    voice_channel = interaction.user.voice.channel
+
+    # Récupérer ou créer le MusicPlayer pour ce serveur
+    player = music_players.get(interaction.guild.id)
+    if player is None:
+        player = MusicPlayer(bot, interaction)
+        music_players[interaction.guild.id] = player
+
+    await interaction.response.send_message(f"Recherche de **{query}** en cours…", ephemeral=True)
+
+    # Extraction des informations de la musique
+    info = extract_info(query, download=False)
+    if info is None:
+        await interaction.followup.send("Impossible de récupérer les informations de la musique.")
+        return
+    song = Song(info)
+
+    # Connexion au salon vocal si besoin
+    await player.connect(voice_channel)
+
+    # Si une musique est déjà en cours, on ajoute à la file d'attente
+    if player.voice_client.is_playing() or player.current is not None:
+        success = await player.add_to_queue(song)
+        if not success:
+            await interaction.followup.send("La file d'attente est pleine (limite de 10 musiques)!")
+        else:
+            await interaction.followup.send(f"**{song.title}** a été ajoutée à la file d'attente.")
+    else:
+        await player.play_song(song)
+
+# Commande slash /queue
+@bot.tree.command(name="queue", description="Affiche la file d'attente actuelle.")
+async def queue(interaction: discord.Interaction):
+    player = music_players.get(interaction.guild.id)
+    if player is None or (player.current is None and not player.queue):
+        await interaction.response.send_message("Il n'y a aucune musique dans la file d'attente !", ephemeral=True)
+        return
+
+    embed = discord.Embed(title="File d'attente", color=discord.Color.green())
+    description = ""
+    if player.current:
+        description += f"**En cours :** [{player.current.title}]({player.current.webpage_url}) - {player.current.formatted_duration()}\n"
+    if player.queue:
+        for idx, song in enumerate(player.queue, start=1):
+            description += f"{idx}. [{song.title}]({song.webpage_url}) - {song.formatted_duration()}\n"
+    embed.description = description
+    view = QueueView(player)
+    await interaction.response.send_message(embed=embed, view=view)
 
 #------------------------------------------------------------------------- Lancement du bot
 keep_alive()
